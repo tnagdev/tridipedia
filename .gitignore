@@ -1,0 +1,8 @@
+frontend/.next
+frontend/node_modules
+frontend/package-lock.json
+
+server/node_modules
+server/.env
+server/.env.prod
+server/package-lock.json

@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { M_PLUS_Code_Latin, Press_Start_2P } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const code = Press_Start_2P({ subsets: ["latin"], weight: '400' });
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -16,7 +16,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={code.className + ' h-[100vh] w-[100vw] overflow-auto'}>{children}</body>
     </html>
   );
 }

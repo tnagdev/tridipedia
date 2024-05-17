@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls, useAnimations, useFBX } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import { Suspense, useEffect, useRef } from "react";
+import { Suspense, memo, useEffect, useRef } from "react";
 
 
 function CharLoader({camera} : {camera: THREE.PerspectiveCamera}) {
@@ -11,8 +11,8 @@ function CharLoader({camera} : {camera: THREE.PerspectiveCamera}) {
     const modelNormal = useFBX(`/${modelName}.fbx`);
     
     const ref = useRef();
-    const { actions, mixer, names }= useAnimations(model.animations, model)
-    if (actions[names[0]]) {
+    const { actions, mixer, names }: any = useAnimations<THREE.AnimationClip>(model.animations, model)
+    if (actions?.[names?.[0]]) {
         actions[names[0]].setLoop(THREE.LoopOnce, 1);
         actions[names[0]].clampWhenFinished = true;
     }
@@ -38,7 +38,7 @@ function CharLoader({camera} : {camera: THREE.PerspectiveCamera}) {
     </Suspense>
 }
 
-export function Character() {
+function _Character() {
     const camera = new THREE.PerspectiveCamera();
     const light = new THREE.AmbientLight(0xffffff, 4);
     // avatar
@@ -71,3 +71,6 @@ export function Character() {
         />
     </Canvas>
 }
+
+
+export const Character = memo(_Character);

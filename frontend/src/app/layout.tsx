@@ -16,7 +16,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={code.className + ' h-[100vh] w-[100vw] overflow-auto'}>{children}</body>
+      <body className={code.className + ' h-[100vh] w-[100vw]'}>
+        {children}
+      </body>
     </html>
   );
 }

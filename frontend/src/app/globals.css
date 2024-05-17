@@ -8,6 +8,10 @@
   --background-end-rgb: 255, 255, 255;
 }
 
+.bounds:hover {
+  transform: scale(2);
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --foreground-rgb: 255, 255, 255;
@@ -17,6 +21,7 @@
 }
 
 body {
+  /* cursor: none !important; */
   color: rgb(var(--foreground-rgb));
   background: linear-gradient(
       to bottom,

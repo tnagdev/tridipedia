@@ -43,11 +43,15 @@ const Header = ({container}: any) => {
             link: '#skills'
         },
         {
+            label: 'Experience',
+            link: '#experience'
+        },
+        {
             label: 'Projects',
             link: '#project'
         },
         {
-            label: 'Contact Me',
+            label: 'Contact',
             link: '#contact'
         }
     ]
@@ -66,15 +70,15 @@ const Header = ({container}: any) => {
         }
     })
 
-    return <motion.div id='header' className={`bg-transparent font-sans top-0 h-full py-[10px] flex flex-col justify-between items-start`}>
+    return <motion.div id='header' className={`bg-transparent font-sans top-0e py-[10px] flex flex-col justify-between items-start`}>
         <div className="font-mono text-[8px]">
             {Graffiti.split('\n').map(line => <pre key={line}>{line}</pre>)}
         </div>
-        <div className="flex gap-10 flex-col flex-1 justify-center pl-10">
+        <div className="flex flex-col gap-5 flex-1 justify-center pl-10">
             {navItems.map((item, i) => <StickyItem key={item.label} className="hover:text-sky-500 hover:font-bold" onClick={() => {
                 goToPage(i);
             }}>
-                <div className={`h-[90px] w-[90px] flex justify-center items-center transition-all ${i === active ? 'flex-col scale-125 after:h-[2px] after:mt-1 after:w-4 after:bg-white after:rounded-sm' : ''}`}>{item.label}</div>
+                <div className={`h-[50px] w-[50px] flex justify-center items-center transition-all after:transition-all after:w-0 after:duration-300 ${i === active ? 'flex-col text-[18px] after:h-[2px] after:mt-1 after:w-4 after:bg-white after:rounded-sm' : ''}`}>{item.label}</div>
             </StickyItem>)}
         </div>
     </motion.div>

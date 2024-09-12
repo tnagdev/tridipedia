@@ -19,6 +19,7 @@
     "next": "14.2.2",
     "react": "^18",
     "react-dom": "^18",
+    "react-parallax-tilt": "^1.7.226",
     "react-simple-typewriter": "^5.0.1",
     "three": "^0.163.0"
   },

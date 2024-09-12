@@ -78,7 +78,7 @@ export function TextGlobe({texts = []}: {texts: any[]}) {
       <Suspense fallback={null}>
         <Globe texts={texts}/>
       </Suspense>
-      <TrackballControls />
+      <TrackballControls maxDistance={40} minDistance={35}/>
     </Canvas>
   )
 }

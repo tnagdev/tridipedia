@@ -7,7 +7,7 @@ import { DetailedHTMLProps, HTMLAttributes, MouseEvent, MutableRefObject, useCon
 const StickyItem = ({ children, className, ...props }: DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>) => {
     const ref: MutableRefObject<HTMLDivElement | undefined> = useRef();
     const [position, setPosition] = useState({ x: 0, y: 0 });
-    const { setIsHovered, isHovered } = useContext(CursorContext)
+    const { setIsHovered } = useContext(CursorContext)
     const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
         if (ref.current) {
             const { clientX, clientY } = e;

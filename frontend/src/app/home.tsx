@@ -1,67 +1,90 @@
 "use client"
 
 import { TextGlobe } from "@/common/components/TextGlobe";
-import { Character } from "@/common/components/Character";
 import { Typewriter } from 'react-simple-typewriter';
-import { M_PLUS_Code_Latin, Press_Start_2P } from "next/font/google";
+import { M_PLUS_Code_Latin } from "next/font/google";
 import Image from "next/image";
 import SKillCard from "@/common/components/SkillCard";
-import moment from "moment";
+import AsciiArt from "@/common/components/AsciiArt";
+import { motion, useMotionTemplate, useScroll, useTransform } from 'framer-motion'
+import { useEffect, useMemo, useRef } from "react";
+import Effect from "@/common/particlesystem/Effect";
 
 const codeText = M_PLUS_Code_Latin({ subsets: ["latin"], weight: '400' });
 
+const HomePage = ({ container }: any) => {
+    const { scrollYProgress } = useScroll({ container: container as any });
+    const angle = useTransform(scrollYProgress, [0, 1], [0, 180]);
+    angle.on('change', console.log)
+    const template = useMotionTemplate`rotateX(${angle}deg)`;
 
+    useEffect(() => {
+        const effect = new Effect('home-canvas-1');
+    }, [])
 
-const HomePage = () => {
     const skills = [
-        { 
+        {
             name: 'React Js',
             url: '/react.svg',
             proficiency: 85,
             exp: 5,
-            exp_unit: 'yrs' 
+            exp_unit: 'yrs'
         },
-        { 
+        {
             name: 'Angular',
             url: '/angular.svg',
             proficiency: 85,
             exp: 5.5,
-            exp_unit: 'yrs' 
+            exp_unit: 'yrs'
         },
-        { 
-            name: 'Next Js', 
+        {
+            name: 'Next Js',
             url: '/next.svg',
             proficiency: 80,
             exp: 3,
-            exp_unit: 'yrs' 
+            exp_unit: 'yrs'
         },
-        { 
+        {
             name: 'Javascript',
             url: '/js.svg',
             proficiency: 90,
             exp: 6,
-            exp_unit: 'yrs' 
+            exp_unit: 'yrs'
         },
-        { 
+        {
             name: 'HTML',
             url: '/html5.svg',
             proficiency: 80,
             exp: 6,
-            exp_unit: 'yrs' 
+            exp_unit: 'yrs'
         },
-        { 
+        {
             name: 'CSS',
             url: '/css.svg',
             proficiency: 80,
             exp: 6,
-            exp_unit: 'yrs' 
+            exp_unit: 'yrs'
         },
-        { 
+        {
             name: 'Git',
             url: '/github.svg',
             proficiency: 70,
             exp: 6,
-            exp_unit: 'yrs' 
+            exp_unit: 'yrs'
+        },
+        {
+            name: 'Ionic',
+            url: '/ionic.svg',
+            proficiency: 70,
+            exp: 6,
+            exp_unit: 'yrs'
+        },
+        {
+            name: 'Firebase',
+            url: '/firebase.svg',
+            proficiency: 70,
+            exp: 6,
+            exp_unit: 'yrs'
         },
     ]
 
@@ -91,61 +114,81 @@ const HomePage = () => {
     }
 
     return <>
-        <div id="home" className="flex justify-center h-[100vh]">
-            <div className="flex items-center w-full">
-                <div className="w-[15vw] h-[40vw] relative z-50">
-                    <Character />
+        <motion.div style={{ transform: template }} id="home" className="relative flex lg:h-full p-0">
+            <div className="flex w-full gap-3 flex-col lg:flex-row">
+                <div className="flex flex-1 gap-3 flex-col">
+                    <div >
+                        <div className="flex border-1 border-green-400 p-3 rounded-xl gap-3 items-start lg:items-center flex-col lg:flex-row">
+                            <div className="rounded-md border-green-400 tracking-[0.6px] border-animation">
+                                <AsciiArt className='text-[2px] leading-relaxed bg-green-900 bg-opacity-20 rounded-xl overflow-hidden' />
+                            </div>
+                            <div className="flex-1">
+                                <div className="text-[15px]">{'> '}<Typewriter
+                                    words={['Welcome to Tridipedia', 'Hello! I am Tridibesh']}
+                                    cursor
+                                    cursorBlinking={true}
+                                    loop={1}
+                                    cursorStyle={'_'}
+                                    typeSpeed={80}
+                                />!</div>
+                                <div className={"text-[15px]"}>{'> '}I am a <Typewriter
+                                    words={['Web', 'JS', 'Frontend', 'FullStack', 'App']}
+                                    cursor
+                                    cursorBlinking={true}
+                                    loop={false}
+                                    cursorStyle={'_'}
+                                    typeSpeed={120}
+                                />Developer</div>
+                                <div className={codeText.className + ' text-[15px] mt-5 text-justify'}>
+                                    {`>`} I am a passionate FrontEnd Developer from India, currently working at NextZen Minds as a Tech Lead.
+                                    I&apos;ve been building stuff on the web since 2018 ({new Date().getFullYear() - 2018} yrs). I am a fan of JavaScript and it gives me immense joy to try out
+                                    new JS libraries as they keep popping up every now and then. I have also built a number of Cross-platform Mobile Applications
+                                    using Ionic and React Native.
+                                    I love creative coding with JS and also love to build delightful interactive and animated user interfaces for fun!
+                                    <Typewriter
+                                        words={[]}
+                                        cursor
+                                        cursorBlinking={true}
+                                        loop={1}
+                                        cursorStyle={'_'}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="border-1 border-green-400 p-3 rounded-xl flex-1" id='home-canvas-1'>
+
+                    </div>
                 </div>
-                <div className="flex-1">
-                    <div className="text-[20px]">{'> '}<Typewriter
-                        words={['Welcome to Tridipedia', 'Hello! I am Tridibesh']}
-                        cursor
-                        cursorBlinking={true}
-                        loop={1}
-                        cursorStyle={'_'}
-                        typeSpeed={80}
-                    />!</div>
-                    <div className={"text-[18px]"}>{'> '}I am a <Typewriter
-                        words={['Web', 'JavaScript', 'Frontend', 'FullStack', 'Mobile Application']}
-                        cursor
-                        cursorBlinking={true}
-                        loop={false}
-                        cursorStyle={'_'}
-                        typeSpeed={120}
-                    />Developer</div>
-                    <div className={codeText.className + ' text-[15px] mt-10 w-[50vw]'}>
-                        I am a passionate FrontEnd Developer from India, currently working at CBNITS as Lead FrontEnd Developer. 
-                        I&apos;ve been building stuff on the web since 2018 (6 yrs). I am a fan of JavaScript and it gives me immense joy to try out
-                        new JS libraries as they keep popping up every now and then. I have also built a number of Cross-platform Mobile Applications
-                        using Ionic and React Native. 
-                        I love creative coding with JS and also love to build delightful interactive and animated user interfaces.
+                <div className="flex flex-col gap-3">
+                    <div className="w-full lg:w-[350px] h-[350px] relative z-50 border-4 bg-green-950 rounded-xl bg-opacity-50 border-green-400">
+                        <TextGlobe texts={skills.map(skill => ({ text: skill.name, url: skill.url }))} />
+                    </div>
+                    <div className="rounded-xl flex-1 border-1 border-green-400 p-3">
+                        adkjahkj
                     </div>
                 </div>
             </div>
-        </div>
-        <div id='skills' className="flex h-[100vh] items-center p-5\
-        ">
-            <div className="flex-1 flex items-start text-[12px] flex-col">
-                <div className="flex items-center py-5 justify-center">
+        </motion.div>
+        <div id='skills' className="p-3 border-1 border-green-400 rounded-xl mt-3 h-full">
+            <div className="text-[12px]">
+                <div className="flex items-center pb-5 justify-center">
                     <Image src={require('./../../public/pika.gif')} height={90} width={90} alt='pikachu' />
                     <span>Skills are pokemons<br />Gotta catch&apos;em all</span>
                 </div>
-                <div className="flex flex-row gap-3 flex-wrap">
-                    {skills.map((skill, i) => <SKillCard item={skill} key={skill.name}/>)}
+                <div className="flex flex-wrap gap-3 max-w-3xl">
+                    {skills.map((skill, i) => <SKillCard item={skill} key={skill.name} />)}
                 </div>
             </div>
-            <div className="w-[30vw] h-[30vw]">
-                <TextGlobe texts={skills.map(skill => ({ text: skill.name, url: skill.url }))} />
-            </div>
         </div>
-        <div id='experience' className="flex h-[100vh] items-center p-5">
-            
+        <div id='experience' className="flex items-center p-5 h-full">
+
         </div>
-        <div id='project' className="flex h-[100vh]">
-            
+        <div id='project' className="flex h-full">
+
         </div>
-        <div id='contact' className="flex h-[100vh]">
-            
+        <div id='contact' className="flex h-full">
+
         </div>
     </>
 }

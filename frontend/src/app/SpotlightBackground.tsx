@@ -22,9 +22,9 @@ const SpotlightBackground = () => {
   const cursorAnimationOptions = { damping: 20, stiffness: 250, mass: 1 }
   const x = useSpring(useTransform(mouseX, [0, width], [0, 100]), cursorAnimationOptions);
   const y = useSpring(useTransform(mouseY, [0, height], [0, 100]), cursorAnimationOptions);
-  const background = useMotionTemplate`radial-gradient(600px at ${x}% ${y}%, ${styleConfig.theme.colors.sky[900]}, transparent 80%)`;
+  const background = useMotionTemplate`radial-gradient(200px at ${x}% ${y}%, ${styleConfig.theme.colors.green[950]}, transparent 80%)`;
   const { isHovered } = useContext(CursorContext);
-  const pointerSize = isHovered ? 60 : 10;
+  const pointerSize = isHovered ? 60 : 5;
   const cursorX = useSpring(useTransform(mouseX, (val) => val - pointerSize / 2), cursorAnimationOptions);
   const cursorY = useSpring(useTransform(mouseY, (val) => val - pointerSize / 2), cursorAnimationOptions);
   const stretchX = useMotionValue(1);
@@ -62,7 +62,7 @@ const SpotlightBackground = () => {
 
   return <motion.div className="absolute inset-0 z-0" style={{ background: background }}>
     <motion.div
-      className="rounded-full bg-white absolute"
+      className="rounded-full bg-green-400 absolute"
       style={{ top: cursorY, left: cursorX, scaleX: stretchX, scaleY: stretchY, rotate: rotateAngle  }}
       animate={{height: pointerSize, width: pointerSize }}
       transformTemplate={({rotate, scaleX, scaleY}) => `rotate(${rotate}) scaleX(${scaleX}) scaleY(${scaleY})`}

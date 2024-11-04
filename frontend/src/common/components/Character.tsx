@@ -4,12 +4,12 @@ import { Canvas } from "@react-three/fiber";
 import { Suspense, memo, useEffect, useRef } from "react";
 
 
-function CharLoader({camera} : {camera: THREE.PerspectiveCamera}) {
+function CharLoader({ camera }: { camera: THREE.PerspectiveCamera }) {
     // const modelName = 'kakashi';
     const modelName = 'avatar';
     const model = useFBX(`/${modelName}_waving.fbx`);
     const modelNormal = useFBX(`/${modelName}.fbx`);
-    
+
     const ref = useRef();
     const { actions, mixer, names }: any = useAnimations<THREE.AnimationClip>(model.animations, model)
     if (actions?.[names?.[0]]) {
@@ -28,8 +28,8 @@ function CharLoader({camera} : {camera: THREE.PerspectiveCamera}) {
         model.position.set(0, -1, 0); // avatar
         actions[names[0]]?.reset().play();
     }, [model, modelNormal, actions, names])
-   
-    
+
+
     return <Suspense fallback={null}><primitive onClick={() => {
         model.lookAt(90, 0, 0)
         camera.position.set(90, 0, 0);
@@ -48,7 +48,7 @@ function _Character() {
     const plight = new THREE.PointLight(0xffffff, 3, 0, 0);
     plight.position.set(0, 0, 0);
     plight.lookAt(new THREE.Vector3(0, -1, 0));
-    
+
     // kakashi
     // camera.position.set(0, -20, 125);
     // const cameraAngle = 80;
@@ -56,17 +56,17 @@ function _Character() {
     // const plight = new THREE.PointLight(0xffffff, 3, 0, 0);
     // light.position.set(0, -20, 125);
     // light.lookAt(new THREE.Vector3(0, -65, 0));
-    
+
     const scene = new THREE.Scene();
     scene.add(light);
     scene.add(plight)
-    return <Canvas scene={scene} camera={camera} flat>
-        <CharLoader camera={camera}/>
+    return <Canvas scene={scene} camera={camera} flat className='z-10'>
+        <CharLoader camera={camera} />
         <OrbitControls
-            maxPolarAngle={THREE.MathUtils.degToRad(cameraAngle)} 
-            minPolarAngle={THREE.MathUtils.degToRad(cameraAngle)}    
-            minDistance={cameraDistance} 
-            maxDistance={cameraDistance} 
+            maxPolarAngle={THREE.MathUtils.degToRad(cameraAngle)}
+            minPolarAngle={THREE.MathUtils.degToRad(cameraAngle)}
+            minDistance={cameraDistance}
+            maxDistance={cameraDistance}
             enableZoom={false}
         />
     </Canvas>

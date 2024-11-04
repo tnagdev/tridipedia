@@ -23,16 +23,59 @@
 body {
   /* cursor: none !important; */
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
+  background: linear-gradient(to bottom,
       transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+      rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb));
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+}
+
+
+@property --angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.border-animation {
+  --border-width: -2px;
+  position: relative;
+  background-color: rgb(10 10 10 / var(--tw-bg-opacity));
+  margin: 2px;
+  /* border: none; */
+
+  &::after,
+  &::before {
+    position: absolute;
+    content: '';
+    top: var(--border-width);
+    left: var(--border-width);
+    right: var(--border-width);
+    bottom: var(--border-width);
+    z-index: -1;
+    background-image: conic-gradient(from var(--angle), transparent 70%, theme(colors[green].400));
+    border-radius: 6px;
+    overflow: hidden;
+    animation: 2s grad-spin linear infinite;
+    overflow: visible;
+  }
+
+  &::before {
+    filter: blur(5rem);
+    opacity: 0.5;
+  }
+}
+
+@keyframes grad-spin {
+  from {
+    --angle: 0deg
+  }
+
+  to {
+    --angle: 360deg
   }
 }

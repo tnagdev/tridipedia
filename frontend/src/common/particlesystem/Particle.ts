@@ -1,3 +1,4 @@
+import colors from "tailwindcss/colors";
 import Effect from "./Effect";
 import { getRandomNumber } from "@/utils/utils";
 
@@ -9,38 +10,41 @@ class Particle {
     speedY!: number;
     isCollided = false;
     size: number;
-    maxSize: number = 0.1;
-    minSize: number = 0.1;
+    maxSize: number = 2;
+    minSize: number = 5;
     grow = 0.1;
     history: { x: number, y: number }[] = []
     trailLength: number;
     speedVarince: number;
-    life: number = 200;
+    life: number = 2000;
+    angle;
 
     constructor(system: Effect) {
         this.system = system;
         this.size = getRandomNumber(this.minSize, this.maxSize);
         this.x = getRandomNumber(this.size, this.system.width - this.size);
         this.y = getRandomNumber(this.size, this.system.height - this.size);
-        this.speedX = getRandomNumber(-2, 2);
-        this.speedY = getRandomNumber(-2, 2);
+        this.speedX = getRandomNumber(0.1, 2);
+        this.speedY = getRandomNumber(0.1, 2);
         this.history = [{ x: this.x, y: this.y }]
-        this.speedVarince = getRandomNumber(1, 5);
-        this.trailLength = getRandomNumber(20, 50)
+        this.speedVarince = getRandomNumber(0, 1);
+        this.trailLength = getRandomNumber(10, 20)
         this.life = this.trailLength * 2;
+        this.angle = 0;
     }
 
     reset() {
         this.x = getRandomNumber(this.size, this.system.width - this.size);
         this.y = getRandomNumber(this.size, this.system.height - this.size);
-        this.speedX = getRandomNumber(-2, 2);
-        this.speedY = getRandomNumber(-2, 2);
+        this.speedX = getRandomNumber(0.1, 2);
+        this.speedY = getRandomNumber(0.1, 2);
         this.history = [{ x: this.x, y: this.y }]
         this.life = this.trailLength * 2;
+        this.angle = 0;
     }
 
     render() {
-        this.system.ctx.fillStyle = this.isCollided ? 'red' : 'white';
+        this.system.ctx.fillStyle = this.isCollided ? colors.green[500] : 'white';
         this.system.ctx.stroke();
         this.system.ctx.beginPath();
         this.system.ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
@@ -55,51 +59,29 @@ class Particle {
     }
 
     update() {
-        this.life--;
-        if (this.life <= 1) {
-            if (this.history.length > 1) {
-                this.history.shift();
-            } else {
-                this.reset();
-            }
-            return;
-        }
-        // const x = Math.floor(this.x / this.system.cellSize);
-        // const y = Math.floor(this.y / this.system.cellSize);
-        // const cellIndex = y * this.system.cols + x;
-        // const angle = this.system.flowField[cellIndex];
-        // const angle = this.system.flowField[cellIndex]?.angle || 0;
+        this.angle += 0.02;
+        if (this.angle > 2 * Math.PI) this.angle = 0;
 
-        // this.speedX = Math.cos(angle);
-        // this.speedY = Math.sin(angle);
-
-        this.x += this.speedX * this.speedVarince;
-        this.y += this.speedY * this.speedVarince;
+        this.x += this.speedX;
+        this.y += this.speedY;
 
         if (
-            this.x > (this.system.width - 2 * this.size) ||
-            this.x - this.size < 0
+            this.x >= (this.system.width - 2 * this.size) ||
+            this.x - 2 * this.size <= 0
         ) {
             this.isCollided = true;
-            this.speedX = -this.speedX;
+            this.speedX = - this.speedX;
+            this.angle = - this.angle;
         }
 
         if (
-            this.y > (this.system.height - 2 * this.size) ||
-            this.y - this.size < 0
+            this.y >= (this.system.height - 2 * this.size) ||
+            this.y - 2 * this.size <= 0
         ) {
             this.isCollided = true;
             this.speedY = - this.speedY;
+            this.angle = - this.angle;
         }
-
-        this.history.push({ x: this.x, y: this.y })
-        if (this.history.length > this.trailLength) {
-            this.history.shift();
-        }
-
-        // if (this.size >= this.maxSize || this.size <= this.minSize) {
-        //     this.grow = -this.grow
-        // }
 
         if (this.isCollided) setTimeout(() => this.isCollided = false, 1000);
     }

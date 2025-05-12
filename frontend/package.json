@@ -21,6 +21,7 @@
     "react-dom": "^18",
     "react-parallax-tilt": "^1.7.226",
     "react-simple-typewriter": "^5.0.1",
+    "tailwind-merge": "^2.5.5",
     "three": "^0.163.0"
   },
   "devDependencies": {

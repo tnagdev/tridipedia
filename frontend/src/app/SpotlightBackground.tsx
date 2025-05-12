@@ -9,7 +9,7 @@ import { MathUtils } from "three";
 
 const defaultContext: { isHovered: boolean, setIsHovered: any } = {
   isHovered: false,
-  setIsHovered: (val: boolean) =>  null
+  setIsHovered: (val: boolean) => null
 }
 
 export const CursorContext = createContext(defaultContext);
@@ -34,9 +34,9 @@ const SpotlightBackground = () => {
   useLayoutEffect(() => {
     const handleMouseMove = (event: any) => {
       if (isHovered) {
-        const {left, top, width, height} = event.target?.getBoundingClientRect();
-        const center = {x: left + width / 2, y: top + height / 2};
-        const distance = {x: event.x - center.x, y: event.y - center.y};
+        const { left, top, width, height } = event.target?.getBoundingClientRect();
+        const center = { x: left + width / 2, y: top + height / 2 };
+        const distance = { x: event.x - center.x, y: event.y - center.y };
         const absDistance = Math.max(Math.abs(distance.x), Math.abs(distance.y));
         const angle = MathUtils.radToDeg(Math.atan2(distance.y, distance.x))
         const scaleX = transform(absDistance, [0, width / 2], [1, 1.3])
@@ -60,12 +60,12 @@ const SpotlightBackground = () => {
     }
   })
 
-  return <motion.div className="absolute inset-0 z-0" style={{ background: background }}>
+  return <motion.div className="absolute inset-0 z-0">
     <motion.div
       className="rounded-full bg-green-400 absolute"
-      style={{ top: cursorY, left: cursorX, scaleX: stretchX, scaleY: stretchY, rotate: rotateAngle  }}
-      animate={{height: pointerSize, width: pointerSize }}
-      transformTemplate={({rotate, scaleX, scaleY}) => `rotate(${rotate}) scaleX(${scaleX}) scaleY(${scaleY})`}
+      style={{ top: cursorY, left: cursorX, scaleX: stretchX, scaleY: stretchY, rotate: rotateAngle }}
+      animate={{ height: pointerSize, width: pointerSize }}
+      transformTemplate={({ rotate, scaleX, scaleY }) => `rotate(${rotate}) scaleX(${scaleX}) scaleY(${scaleY})`}
     ></motion.div>
   </motion.div>
 }

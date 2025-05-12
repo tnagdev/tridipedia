@@ -9,7 +9,7 @@ class Effect {
     height!: number;
     width!: number;
     particles: Particle[] = [];
-    noOfParticles = 50;
+    noOfParticles = 30;
     isAnimate = true;
     cellSize = 5;
     flowField: any[] = [];

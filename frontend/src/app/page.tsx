@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import HomePage from './home';
-import Header, { useHeaderHeight } from "./header";
+import Header from "./header";
 import SpotlightBackground, { CursorContext } from "./SpotlightBackground";
 import SideBar from "@/common/components/Sidebar";
 import Effect from "@/common/particlesystem/Effect";
@@ -13,7 +13,6 @@ export default function Home() {
   const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
-    // const effect = new Effect('animation')
   }, [])
 
   return (

@@ -8,7 +8,7 @@ import { CursorContext } from '@/app/SpotlightBackground';
 export const MenuItems = [
     {
         label: 'Home',
-        link: '#home'
+        link: '#home',
     },
     {
         label: 'Skills',
@@ -53,11 +53,11 @@ const SideBar = ({ container }: { container?: React.MutableRefObject<HTMLElement
     }
 
     return (<div className={`flex flex-col gap-5 justify-center font-sans w-[15vw] min-w-[200px]`}>
-        <div className=' text-green-400 border-green-400 border-1 h-full flex flex-col justify-center rounded-xl'>
+        <div className=' text-red-400 border-red-400 border-1 h-full flex flex-col justify-center rounded-xl'>
             {MenuItems.map((item, i) => i == 0 ? null : <StickyItem key={item.label} className="hover:text-neutral-950 hover:font-bold" onClick={() => {
                 goToPage(i);
             }}>
-                <div className={`flex justify-center items-center transition-all after:transition-all after:w-0 after:duration-300 ${i == active ? isHovered ? 'after:bg-black' : 'after:bg-green-400' : ''} ${i === active ? 'flex-col text-[18px] after:h-[2px] after:mt-1 after:w-4 after:rounded-sm' : ''}`}>{item.label}</div>
+                <div className={`flex justify-center items-center transition-all after:transition-all after:w-0 after:duration-300 ${i == active ? isHovered ? 'after:bg-black' : 'after:bg-red-400' : ''} ${i === active ? 'flex-col text-[18px] after:h-[2px] after:mt-1 after:w-4 after:rounded-sm' : ''}`}>{item.label}</div>
             </StickyItem>)}
         </div>
     </div>)

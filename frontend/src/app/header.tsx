@@ -30,10 +30,9 @@ const Header = ({ container }: any) => {
       |____|   |__|  |__\\____ | |__|   __/ \\___  >____ | |__(____  /
                              \\/    |__|        \\/     \\/         \\/  `
     useEffect(() => {
-        // const effect = new Effect('header');
     }, [])
 
-    return <motion.div id='header' className={`flex flex-col justify-between items-center z-50 text-green-400 border-1 rounded-xl border-green-400`}>
+    return <motion.div id='header' className={`flex flex-col justify-between items-center z-50 text-red-400 border-1 rounded-xl border-red-400`}>
         <div className="font-mono text-[8px] p-3">
             {Graffiti.split('\n').map(line => <pre key={line}>{line}</pre>)}
         </div>

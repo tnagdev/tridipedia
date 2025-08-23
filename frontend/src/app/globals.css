@@ -57,7 +57,7 @@ body {
     right: var(--border-width);
     bottom: var(--border-width);
     z-index: -1;
-    background-image: conic-gradient(from var(--angle), transparent 70%, theme(colors[blue].400));
+    background-image: conic-gradient(from var(--angle), transparent 70%, theme(colors[green].400));
     border-radius: 6px;
     overflow: hidden;
     animation: 2s grad-spin linear infinite;

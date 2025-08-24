@@ -5,6 +5,7 @@ import SkillsPage from "./SkillsPage";
 import AboutMePage from "./AboutMe";
 import ExperiencePage from "./ExperiencePage";
 import ContactsPage from "./ContactsPage";
+import ProjectsPage from "@/app/ProjectsPage";
 
 
 
@@ -16,6 +17,7 @@ const HomePage = ({ container }: any) => {
         <AboutMePage container={container} />
         <SkillsPage />
         <ExperiencePage />
+        <ProjectsPage />
         <ContactsPage />
     </>
 }

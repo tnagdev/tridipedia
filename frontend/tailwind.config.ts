@@ -14,6 +14,21 @@ const config: Config = {
       scale: {
         '300': '3'
       },
+      animation: {
+        'slideInFromBottom': 'slideInFromBottom 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+      },
+      keyframes: {
+        slideInFromBottom: {
+          from: {
+            opacity: '0',
+            transform: 'translateY(40px)',
+          },
+          to: {
+            opacity: '1',
+            transform: 'translateY(0)',
+          },
+        },
+      },
       colors: {
         nyanza: {
           100: "#16461d",

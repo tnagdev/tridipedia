@@ -2,14 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
-}
-
-.bounds:hover {
-  transform: scale(2);
+.banner .slider {
+  position: absolute;
+  width: fit-content;
+  height: fit-content;
+  top: 10%;
+  left: calc(50% - 100px);
+  transform-style: preserve-3d;
+  transform: perspective(1000px) rotateX(-16deg)
+    rotateY(var(--current-rotation, 0deg));
+  transition: transform 0.6s ease-in-out;
+  z-index: 2;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -23,9 +26,12 @@
 body {
   /* cursor: none !important; */
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(to bottom,
+  background: linear-gradient(
+      to bottom,
       transparent,
-      rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb));
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
 }
 
 @layer utilities {
@@ -33,7 +39,6 @@ body {
     text-wrap: balance;
   }
 }
-
 
 @property --angle {
   syntax: "<angle>";
@@ -51,13 +56,17 @@ body {
   &::after,
   &::before {
     position: absolute;
-    content: '';
+    content: "";
     top: var(--border-width);
     left: var(--border-width);
     right: var(--border-width);
     bottom: var(--border-width);
     z-index: -1;
-    background-image: conic-gradient(from var(--angle), transparent 70%, theme(colors[green].400));
+    background-image: conic-gradient(
+      from var(--angle),
+      transparent 70%,
+      theme(colors[green].400)
+    );
     border-radius: 6px;
     overflow: hidden;
     animation: 2s grad-spin linear infinite;
@@ -72,10 +81,13 @@ body {
 
 @keyframes grad-spin {
   from {
-    --angle: 0deg
+    --angle: 0deg;
   }
 
   to {
-    --angle: 360deg
+    --angle: 360deg;
   }
 }
+
+@import url("https://fonts.cdnfonts.com/css/ica-rubrik-black");
+@import url("https://fonts.cdnfonts.com/css/poppins");

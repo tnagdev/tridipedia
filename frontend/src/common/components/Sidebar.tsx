@@ -20,11 +20,11 @@ export const MenuItems = [
     },
     {
         label: 'Projects',
-        link: '#project'
+        link: '#projects'
     },
     {
         label: 'Contact',
-        link: '#contact'
+        link: '#contacts'
     }
 ]
 

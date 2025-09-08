@@ -20,9 +20,11 @@ function Word({ data, ...props }: any) {
         document.body.style.cursor = 'auto'
     }
   }, [hovered])
+
   // useFrame(() => {
   //   textRef.current?.material.color.lerp(color.set(hovered ? '#fa2720' : 'white'), 0.1)
   // })
+
   return (
     <Billboard {...props}>
       <Image ref={imageRef} url={data.url} position={[-2, 0, 0]} scale={3} transparent/>
@@ -63,8 +65,11 @@ function Cloud({ count = 10, radius = 20, words: _words = [] }: any) {
 function Globe({texts = []}: {texts: any[]}) {
   const ref: MutableRefObject<THREE.Group<THREE.Object3DEventMap> | undefined> = useRef();
   useFrame(() => {
-    if (ref.current)
-      ref.current.rotation.x -= 0.0009
+    if (ref.current) {
+      ref.current.rotation.x -= 0.005
+      ref.current.rotation.y -= 0.005
+      ref.current.rotation.z -= 0.005
+    }
   })
   return <group ref={ref as any} rotation={[100, 10.5, 100]}>
     <Cloud words={texts} count={texts.length} radius={20} />
@@ -74,11 +79,11 @@ function Globe({texts = []}: {texts: any[]}) {
 export function TextGlobe({texts = []}: {texts: any[]}) {
   return (
     <Canvas dpr={[1, 2]} camera={{ position: [0, 0, 35], fov: 100 }}>
-      <fog attach="fog" args={[Colors.sky[900], 0, 80]} />
+      <fog attach="fog" args={[Colors.green[400], 0, 80]} />
       <Suspense fallback={null}>
         <Globe texts={texts}/>
       </Suspense>
-      <TrackballControls maxDistance={40} minDistance={35}/>
+      <TrackballControls maxDistance={30} minDistance={30}/>
     </Canvas>
   )
 }

@@ -1,5 +1,5 @@
 import type { Config } from "tailwindcss";
-import {nextui} from "@nextui-org/react";
+import { nextui } from "@nextui-org/react";
 
 const config: Config = {
   content: [
@@ -13,6 +13,21 @@ const config: Config = {
     extend: {
       scale: {
         '300': '3'
+      },
+      animation: {
+        'slideInFromBottom': 'slideInFromBottom 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+      },
+      keyframes: {
+        slideInFromBottom: {
+          from: {
+            opacity: '0',
+            transform: 'translateY(40px)',
+          },
+          to: {
+            opacity: '1',
+            transform: 'translateY(0)',
+          },
+        },
       },
       colors: {
         nyanza: {
@@ -102,6 +117,6 @@ const config: Config = {
       }
     }
   },
-  plugins: [nextui()],
+  plugins: [nextui(), require("@xpd/tailwind-3dtransforms")],
 };
 export default config;

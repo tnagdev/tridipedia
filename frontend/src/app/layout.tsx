@@ -16,7 +16,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={code.className + ' h-[100vh] overflow-hidden'}>
+      <body className={code.className + ' h-[100vh] overflow-hidden bg-neutral-950 perspective-1000'}>
         {children}
       </body>
     </html>

@@ -1,0 +1,9 @@
+{
+  "name": "Tridipedia — Journey of a Developer",
+  "short_name": "Tridipedia",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000804",
+  "theme_color": "#000804",
+  "icons": []
+}

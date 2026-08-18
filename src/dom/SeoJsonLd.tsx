@@ -8,9 +8,9 @@ export function SeoJsonLd() {
     const ld = {
       '@context': 'https://schema.org',
       '@type': 'Person',
-      name: profile.name,
+      name: profile.fullName ?? profile.name,
       alternateName: profile.brand,
-      jobTitle: latest?.role,
+      jobTitle: profile.designation ?? latest?.role,
       worksFor: latest ? { '@type': 'Organization', name: latest.company } : undefined,
       description: profile.bio,
       knowsAbout: skills.map((s) => s.name),
@@ -19,6 +19,7 @@ export function SeoJsonLd() {
       url: meta.url,
       image: meta.url + profile.avatar,
       email: content.email ? `mailto:${content.email}` : undefined,
+      telephone: content.phone ?? undefined,
     };
     const el = document.createElement('script');
     el.type = 'application/ld+json';

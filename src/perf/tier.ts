@@ -25,6 +25,12 @@ export interface TierSpec {
  * The whole scene render (all meshes, 30 draw calls) is under 1ms, so the rain
  * and the bloom pass are the entire budget.
  *
+ * LOW keeps a SHORT bloom rather than none. Bloom is not what makes this scene
+ * expensive — the rain instances are, and LOW already cuts those from 60k to 9k.
+ * Dropping it entirely made the whole site change character the moment a machine
+ * dipped below the demotion bound: every neon line went flat, with no way back.
+ * Two mip levels is a tight halo for a fraction of the cost of four.
+ *
  * MSAA is deliberately capped at 2. The scene is overwhelmingly additive,
  * alpha-textured glyphs with no hard geometric edges — MSAA only helps the
  * text and wireframes, and 4x costs full-resolution multisample bandwidth on
@@ -37,7 +43,7 @@ export const TIER_SPECS: Record<TierName, TierSpec> = {
   ULTRA:   { name: 'ULTRA',   instances: 85_000, bloomLevels: 5, msaa: 2, dpr: [1.0, 1.75],  textBudget: 40, ambientRain: true,  heroFormation: 4000, chromaticAberration: true },
   HIGH:    { name: 'HIGH',    instances: 60_000, bloomLevels: 4, msaa: 2, dpr: [1.0, 1.5],   textBudget: 40, ambientRain: true,  heroFormation: 3000, chromaticAberration: true },
   MID:     { name: 'MID',     instances: 24_000, bloomLevels: 3, msaa: 0, dpr: [0.9, 1.25],  textBudget: 24, ambientRain: false, heroFormation: 2000, chromaticAberration: true },
-  LOW:     { name: 'LOW',     instances: 9_000,  bloomLevels: 0, msaa: 0, dpr: [0.75, 1.0],  textBudget: 14, ambientRain: false, heroFormation: 1500, chromaticAberration: true },
+  LOW:     { name: 'LOW',     instances: 9_000,  bloomLevels: 2, msaa: 0, dpr: [0.75, 1.0],  textBudget: 14, ambientRain: false, heroFormation: 1500, chromaticAberration: true },
   REDUCED: { name: 'REDUCED', instances: 2_500,  bloomLevels: 0, msaa: 0, dpr: [1.0, 1.0],   textBudget: 14, ambientRain: false, heroFormation: 0,    chromaticAberration: false },
 };
 

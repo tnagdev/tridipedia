@@ -110,7 +110,11 @@ void main() {
   // inset so the mark sits inside the hex with breathing room
   vec2 luv = (vUv - 0.5) / 0.62 + 0.5;
   float inside = step(0.0, luv.x) * step(luv.x, 1.0) * step(0.0, luv.y) * step(luv.y, 1.0);
-  vec2 auv = vCellOrigin + vec2(luv.x, 1.0 - luv.y) / uCols;
+  // NO v flip here. QUAD_UVS is already V-inverted (see rain/quad.ts), so
+  // vUv.y is 0 at the quad's TOP, and the atlas is uploaded with flipY off, so
+  // texture v 0 is the cell's top row. The two line up as they are — flipping
+  // again is what had every logo in the app rendering upside down.
+  vec2 auv = vCellOrigin + vec2(luv.x, luv.y) / uCols;
   float logo = texture(uAtlas, auv).a * inside;
 
   // --- interior wash + scan ---

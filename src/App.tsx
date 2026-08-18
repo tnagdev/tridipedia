@@ -22,7 +22,6 @@ export function App() {
   const textMode = useUi((s) => s.textMode);
   const webglFailed = useUi((s) => s.webglFailed);
   const [ceiling, setCeiling] = useState<TierName | null>(null);
-  const [avatarSrc, setAvatarSrc] = useState<string | null>(null);
 
   // Restore the stored preference, and force text mode when WebGL2 is missing.
   useEffect(() => {
@@ -40,7 +39,6 @@ export function App() {
     boot().then((r) => {
       if (!alive) return;
       setCeiling(r.tier);
-      setAvatarSrc(r.avatarSrc);
     });
     return () => { alive = false; };
   }, []);
@@ -93,7 +91,6 @@ export function App() {
                 <Stage
                   ceiling={ceiling}
                   reducedMotion={reducedMotion}
-                  avatarSrc={avatarSrc}
                   onReady={onReady}
                 />
               </Suspense>

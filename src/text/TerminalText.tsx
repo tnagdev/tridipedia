@@ -43,5 +43,7 @@ export interface TroikaText extends THREE.Mesh {
   text: string;
   fillOpacity: number;
   outlineOpacity: number;
+  /** Hex string or number. Cheap to set, but it re-syncs the material — never per frame. */
+  color: string | number;
   clipRect: [number, number, number, number] | null;
 }

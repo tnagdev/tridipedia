@@ -1,20 +1,21 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { TerminalText } from '@/text/TerminalText';
+import { TerminalText, type TroikaText } from '@/text/TerminalText';
 import { JobMonolith } from '@/objects/JobMonolith';
 import { Conduit } from '@/objects/Conduit';
 import { useSectionProgress } from '@/scroll/useSectionProgress';
 import { experience, jobStart, jobEnd, getSection } from '@/content/loadContent';
 import { PALETTE } from '@/text/palette';
-import { JobCard } from './JobCard';
-import { JobDossier } from './JobDossier';
+import { JobCard, cardDockAt } from './JobCard';
 import { F } from '@/state/frameState';
-import { getUi, setUi } from '@/state/store';
+import { clamp01 } from '@/scroll/easing';
 
 const CANYON_START = -150;
 const CANYON_LEN = 110;
 const WALL_X = 11;
+/** Height of the wall slabs, and therefore of the cards parked flush on them. */
+const WALL_Y = 0.5;
 
 const [SEC_START, SEC_END] = getSection('experience').range;
 const SPAN = SEC_END - SEC_START;
@@ -41,7 +42,7 @@ export const JOB_LAYOUT = (() => {
       side,
       length,
       index: i,
-      center: [side * WALL_X, 0.5, (z0 + z1) / 2] as [number, number, number],
+      center: [side * WALL_X, WALL_Y, (z0 + z1) / 2] as [number, number, number],
       current: j.end === null,
       range: [SEC_START + i * slice, SEC_START + (i + 1) * slice] as [number, number],
     };
@@ -74,27 +75,35 @@ export function ExperienceSection() {
     return out;
   }, []);
 
-  // Escape closes the dossier. Real keyboard affordance, not decoration.
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && getUi().openCard) setUi({ openCard: null });
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, []);
+  const yearRefs = useRef<(TroikaText | null)[]>([]);
 
   useFrame(() => {
     const g = group.current;
     if (!g) return;
     g.visible = p.current.band > 0.001;
+    if (!g.visible) return;
 
-    // Leaving the section closes the dossier, rather than locking scroll to
-    // keep it open — a scroll lock would desynchronise the camera from the
-    // scrollbar, since F.raw is read straight from window.scrollY.
-    if (!g.visible && getUi().openCard) setUi({ openCard: null });
-    else if (getUi().openCard) {
-      const m = JOB_LAYOUT.find((x) => x.job.id === getUi().openCard);
-      if (m && (F.smooth < m.range[0] - 0.01 || F.smooth > m.range[1] + 0.01)) setUi({ openCard: null });
+    // The mile markers stand on the canyon floor, well inside the distance the
+    // card docks at — so the ones between the camera and a docked card printed
+    // straight through it. They are background furniture; they yield while a
+    // card is being read and come back as it departs.
+    const slice = SPAN / JOB_LAYOUT.length;
+    const i = Math.min(
+      JOB_LAYOUT.length - 1,
+      Math.max(0, Math.floor((F.smooth - SEC_START) / slice)),
+    );
+    const local = clamp01((F.smooth - (SEC_START + i * slice)) / slice);
+    const hidden = cardDockAt(local);
+    // All the way to nothing at full dock. At 4% left the year was still a
+    // legible smudge sitting in the middle of the copy.
+    const show = 1 - hidden;
+    for (const t of yearRefs.current) {
+      if (!t) continue;
+      t.fillOpacity = show;
+      // The OUTLINE has to go too. Fading only the fill leaves troika's black
+      // outline at full strength, and a black outline over the card's dark body
+      // reads as a grey ghost of the year sitting on top of the copy.
+      t.outlineOpacity = show * 0.9;
     }
   });
 
@@ -124,13 +133,14 @@ export function ExperienceSection() {
         />
       ))}
 
-      {/* Flight cards: park on the wall, dock dead-centre, depart. */}
+      {/* Flight cards: lie flush on the wall, dock dead-centre, depart. */}
       {JOB_LAYOUT.map((m) => (
         <JobCard
           key={`card-${m.job.id}`}
           job={m.job}
           side={m.side}
           parkX={m.side * (WALL_X - 0.6)}
+          parkY={m.center[1]}
           parkZ={m.center[2]}
           range={m.range}
           index={m.index}
@@ -138,13 +148,17 @@ export function ExperienceSection() {
       ))}
 
       {/* Year mile-markers along the conduit. */}
-      {years.map((y) => (
-        <TerminalText key={y.label} position={[0, -3.4, y.z]} fontSize={0.7} color={PALETTE.textDim}>
+      {years.map((y, i) => (
+        <TerminalText
+          key={y.label}
+          ref={((el: TroikaText | null) => { yearRefs.current[i] = el; }) as never}
+          position={[0, -3.4, y.z]}
+          fontSize={0.7}
+          color={PALETTE.textDim}
+        >
           {y.label}
         </TerminalText>
       ))}
-
-      <JobDossier />
     </group>
   );
 }

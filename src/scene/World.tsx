@@ -17,7 +17,7 @@ import type { TierSpec } from '@/perf/tier';
  * Only the sections near the camera are mounted, which is what keeps the live
  * <Text> count trivially inside budget.
  */
-export function World({ tier, avatarSrc, forceAll = false }: { tier: TierSpec; avatarSrc: string | null; forceAll?: boolean }) {
+export function World({ tier, forceAll = false }: { tier: TierSpec; forceAll?: boolean }) {
   // Tag rain columns near each skill chip so the per-skill glyph lock and
   // colour tint still land now the chips follow the camera spline instead of a
   // fixed tower grid. The radius is generous because the helix spaces chips
@@ -71,11 +71,11 @@ export function World({ tier, avatarSrc, forceAll = false }: { tier: TierSpec; a
       )}
 
       {hero && <HeroSection formationCount={tier.heroFormation} />}
-      {about && <AboutSection avatarSrc={avatarSrc} />}
+      {about && <AboutSection />}
       {skillsOn && <SkillsSection />}
       {exp && <ExperienceSection />}
       {proj && <ProjectsSection />}
-      {contact && <ContactSection />}
+      {contact && <ContactSection formationCount={tier.heroFormation} />}
     </>
   );
 }

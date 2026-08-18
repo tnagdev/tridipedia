@@ -7,7 +7,7 @@ import { CameraRig } from '@/camera/CameraRig';
 import { World } from './World';
 import { Effects } from './Effects';
 import { QualityMonitor } from '@/perf/QualityProvider';
-import { TIER_SPECS, demote, tierOverride, type TierName } from '@/perf/tier';
+import { TIER_SPECS, demote, promote, tierOverride, type TierName } from '@/perf/tier';
 import { PALETTE } from '@/text/palette';
 import { setUi } from '@/state/store';
 import { WarmUp } from './WarmUp';
@@ -23,12 +23,10 @@ const DevForceSize = DEV_FORCE_SIZE
 export function Stage({
   ceiling,
   reducedMotion,
-  avatarSrc,
   onReady,
 }: {
   ceiling: TierName;
   reducedMotion: boolean;
-  avatarSrc: string | null;
   onReady: () => void;
 }) {
   const [tierName, setTierName] = useState<TierName>(reducedMotion ? 'REDUCED' : ceiling);
@@ -40,6 +38,12 @@ export function Stage({
     if (pinned) return; // a pinned tier must not drift, or captures are meaningless
     setTierName((t) => demote(t));
   }, [pinned]);
+  const handlePromote = useCallback(() => {
+    // Never past the tier boot measured, and never out of reduced motion, which
+    // is a stated preference rather than a performance verdict.
+    if (pinned || reducedMotion) return;
+    setTierName((t) => promote(t, ceiling));
+  }, [pinned, reducedMotion, ceiling]);
 
   // Stage owns the authoritative tier, so it must publish it. Without this the
   // store reports whatever it was initialised with, which is worse than useless.
@@ -94,14 +98,14 @@ export function Stage({
       <fog attach="fog" args={[PALETTE.bg, 34, 150]} />
 
       <Suspense fallback={null}>
-        <World tier={tier} avatarSrc={avatarSrc} />
+        <World tier={tier} />
         <Nav3D />
-        <WarmUp tier={tier} avatarSrc={avatarSrc} onReady={onReady} />
+        <WarmUp tier={tier} onReady={onReady} />
         <Preload all />
       </Suspense>
 
       <AdaptiveDpr pixelated />
-      <QualityMonitor onDemote={handleDemote} />
+      <QualityMonitor onDemote={handleDemote} onPromote={handlePromote} />
       <Effects tier={tier} reducedMotion={reducedMotion} />
     </Canvas>
   );

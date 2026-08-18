@@ -93,6 +93,21 @@ export function columns(box: PanelBox, count: number, gutter = 0.3): number[] {
   return Array.from({ length: count }, (_, i) => box.left + w / 2 + i * (w + gutter));
 }
 
+/**
+ * Y centres for a column of rows of DIFFERENT sizes, stacked from the top of
+ * the content box. Each row reserves its own height plus a gap, so rows can
+ * never overlap however the type scale is retuned — which hand-picked
+ * constants could not guarantee.
+ */
+export function stack(box: PanelBox, items: { size: number; gap?: number }[]): number[] {
+  let cursor = box.top;
+  return items.map((it) => {
+    const centre = cursor - it.size * 0.5;
+    cursor = centre - it.size * 0.5 - (it.gap ?? it.size * 0.6);
+    return centre;
+  });
+}
+
 /** Y positions for `count` stacked rows starting at the top of the content box. */
 export function rows(box: PanelBox, count: number, size = box.bodySize): number[] {
   const step = size * box.lineHeight;

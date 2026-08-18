@@ -1,9 +1,11 @@
-frontend/.next
-frontend/node_modules
-frontend/package-lock.json
 node_modules/
 dist/
 .vite/
 *.local
 .DS_Store
 .captures/
+.next/
+*.log
+# Added by code-review-graph
+.code-review-graph/
+.claude

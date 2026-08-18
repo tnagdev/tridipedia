@@ -39,7 +39,10 @@ const fragmentShader = /* glsl */ `
   precision mediump float;
   varying vec2 vUv;
 
-  uniform float uTime, uOpacity, uHeader, uFooter, uAspect, uFill, uGrid;
+  uniform float uTime, uOpacity, uHeader, uFooter, uAspect, uFill, uGrid, uChamfer, uEdgeOn;
+  uniform float uLineK;     // 1 = the original uv-space line weight
+  uniform float uRadius;    // rounded corner, in fractions of panel height
+  uniform float uBracket;   // 0..1 weight of the corner brackets
   uniform float uBoot;      // 0..1 open animation
   uniform float uLock;      // 0..1 corner brackets flying in
   uniform float uChrome;    // 0 = plain, 1 = window chrome (popup)
@@ -48,6 +51,28 @@ const fragmentShader = /* glsl */ `
 
   float bar(float x, float c, float w) {
     return 1.0 - smoothstep(w * 0.5, w * 0.5 + 0.0016, abs(x - c));
+  }
+
+  /**
+   * Distance to one 45-degree corner cut, given the distances to the two edges
+   * that meet there. Returns a large number when uChamfer is 0, so an unchamfered
+   * panel is bit-for-bit what it was before this existed.
+   */
+  float cornerCut(float a, float b) {
+    if (uChamfer <= 0.0) return 1e3;
+    return (a + b - uChamfer) * 0.7071;
+  }
+
+  /**
+   * Distance to a ROUNDED corner, the same way cornerCut gives the distance to a
+   * mitred one. Only the square of side uRadius tucked into the corner is
+   * affected; everywhere else this returns a large number and the straight edges
+   * are left exactly as they were.
+   */
+  float cornerRound(float a, float b) {
+    if (uRadius <= 0.0) return 1e3;
+    if (a >= uRadius || b >= uRadius) return 1e3;
+    return uRadius - length(vec2(uRadius - a, uRadius - b));
   }
 
   void main() {
@@ -66,13 +91,33 @@ const fragmentShader = /* glsl */ `
     d.x *= uAspect;
     float bd = min(d.x, d.y);
 
+    // Cut the corners off at 45 degrees. Folding this into bd rather than
+    // masking afterwards means the frame line, the bevel and the fill all
+    // follow the new silhouette for free.
+    vec2 dl = vec2(uv.x * uAspect, uv.y);          // to the left / bottom edges
+    vec2 dr = vec2((1.0 - uv.x) * uAspect, 1.0 - uv.y); // to the right / top edges
+    bd = min(bd, cornerCut(dl.x, dl.y));
+    bd = min(bd, cornerCut(dr.x, dl.y));
+    bd = min(bd, cornerCut(dl.x, dr.y));
+    bd = min(bd, cornerCut(dr.x, dr.y));
+    bd = min(bd, cornerRound(dl.x, dl.y));
+    bd = min(bd, cornerRound(dr.x, dl.y));
+    bd = min(bd, cornerRound(dl.x, dr.y));
+    bd = min(bd, cornerRound(dr.x, dr.y));
+
     float body = smoothstep(0.0, 0.004, bd);
     float fill = body * uFill;
 
     // ---- frame line with a prismatic fringe ----
-    float frameR = 1.0 - smoothstep(0.0015, 0.0038, abs(bd - 0.0075));
-    float frameG = 1.0 - smoothstep(0.0015, 0.0038, abs(bd - 0.0065));
-    float frameB = 1.0 - smoothstep(0.0015, 0.0038, abs(bd - 0.0055));
+    // bd is measured in fractions of the panel's HEIGHT, so a band written as a
+    // fixed bd is a fixed fraction of the height and its WORLD weight changes
+    // with the panel: a 2.4-tall tile drew a line 40% the weight of a 5.6-tall
+    // one, thin enough to alias into a row of dashes along the bottom edge.
+    // uLineK rescales the band so a caller can pin it to a world size instead.
+    float k = uLineK;
+    float frameR = 1.0 - smoothstep(0.0015 * k, 0.0038 * k, abs(bd - 0.0075 * k));
+    float frameG = 1.0 - smoothstep(0.0015 * k, 0.0038 * k, abs(bd - 0.0065 * k));
+    float frameB = 1.0 - smoothstep(0.0015 * k, 0.0038 * k, abs(bd - 0.0055 * k));
     vec3 fringe = vec3(frameR, frameG, frameB) * 0.5;
     float frame = max(frameR, max(frameG, frameB));
 
@@ -81,10 +126,10 @@ const fragmentShader = /* glsl */ `
     float slide = (1.0 - uLock) * 0.5;
     vec2 cs = c - slide;
     float cornerZone = step(0.66, max(cs.x, cs.y)) * step(0.42, min(cs.x, cs.y));
-    float brackets = frame * cornerZone * uLock;
+    float brackets = frame * cornerZone * uLock * uBracket;
 
     // ---- inner bevel: a lit top lip gives the plate thickness ----
-    float bevel = (1.0 - smoothstep(0.0, 0.016, abs(bd - 0.020))) * 0.16
+    float bevel = (1.0 - smoothstep(0.0, 0.016 * k, abs(bd - 0.020 * k))) * 0.16
                 * smoothstep(0.5, 0.92, uv.y);
 
     // ---- header band ----
@@ -150,10 +195,16 @@ const fragmentShader = /* glsl */ `
     float glowMask = brackets + headerRule + footerRule + leds + chrome + bars + scanEdge;
     float bodyMask = fill + grid + scan + roll + headerFill + bevel + ticks;
 
+    // uEdgeOn 0 keeps the housing — the fill, the grid, the depth-writing back
+    // plate that cuts the rain — and drops every LINE, for panels that are
+    // getting their frame from somewhere else.
+    glowMask *= uEdgeOn;
+    frame *= uEdgeOn;
+
     vec3 col = uBody * bodyMask
              + uEdge * (glowMask + frame * 0.22)
-             + fringe * uEdge * 0.35
-             + uAccent * (leds * 0.6 + bars * 0.5 + chrome * 0.8);
+             + fringe * uEdge * 0.35 * uEdgeOn
+             + uAccent * (leds * 0.6 + bars * 0.5 + chrome * 0.8) * uEdgeOn;
 
     float a = (bodyMask + glowMask + frame * 0.28) * uOpacity;
     if (a < 0.003) discard;
@@ -180,6 +231,11 @@ function getPanelMaterial() {
       uAspect: { value: 1 },
       uFill: { value: 0.16 },
       uGrid: { value: 1 },
+      uChamfer: { value: 0 },
+      uEdgeOn: { value: 1 },
+      uLineK: { value: 1 },
+      uRadius: { value: 0 },
+      uBracket: { value: 1 },
       uCurve: { value: 1 },
       uBoot: { value: 1 },
       uLock: { value: 1 },
@@ -202,16 +258,68 @@ function getPanelMaterial() {
  * first and its depth write rejects everything behind it — which is what makes
  * a panel genuinely readable rather than merely darker.
  */
-let backMaterial: THREE.MeshBasicMaterial | null = null;
+const backVertexShader = /* glsl */ `
+  varying vec2 vUv;
+  void main() {
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+
+/**
+ * A ShaderMaterial rather than a MeshBasicMaterial purely so the back plate can
+ * carry the SAME chamfer as the front. A rectangular plate behind a cut-cornered
+ * panel shows its square corners poking out of the diagonals — and because this
+ * plate is what occludes the rain, they show up as bright rectangles of nothing.
+ * Still opaque and still depth-writing: discard leaves no depth behind either.
+ */
+const backFragmentShader = /* glsl */ `
+  precision mediump float;
+  varying vec2 vUv;
+  uniform float uAspect, uChamfer, uRadius;
+  uniform vec3 uColor;
+
+  float cornerCut(float a, float b) {
+    if (uChamfer <= 0.0) return 1e3;
+    return (a + b - uChamfer) * 0.7071;
+  }
+
+  float cornerRound(float a, float b) {
+    if (uRadius <= 0.0) return 1e3;
+    if (a >= uRadius || b >= uRadius) return 1e3;
+    return uRadius - length(vec2(uRadius - a, uRadius - b));
+  }
+
+  void main() {
+    vec2 dl = vec2(vUv.x * uAspect, vUv.y);
+    vec2 dr = vec2((1.0 - vUv.x) * uAspect, 1.0 - vUv.y);
+    float bd = min(min(cornerCut(dl.x, dl.y), cornerCut(dr.x, dl.y)),
+                   min(cornerCut(dl.x, dr.y), cornerCut(dr.x, dr.y)));
+    bd = min(bd, min(min(cornerRound(dl.x, dl.y), cornerRound(dr.x, dl.y)),
+                     min(cornerRound(dl.x, dr.y), cornerRound(dr.x, dr.y))));
+    if (bd < 0.0) discard;
+    gl_FragColor = vec4(uColor, 1.0);
+  }
+`;
+
+let backMaterial: THREE.ShaderMaterial | null = null;
 function getBackMaterial() {
   if (backMaterial) return backMaterial;
-  backMaterial = new THREE.MeshBasicMaterial({
-    color: new THREE.Color('#02150a'),
+  backMaterial = new THREE.ShaderMaterial({
+    vertexShader: backVertexShader,
+    fragmentShader: backFragmentShader,
     transparent: false,
     depthWrite: true,
     depthTest: true,
     side: THREE.DoubleSide,
     toneMapped: false,
+    uniforms: {
+      uColor: { value: new THREE.Color('#02150a') },
+      uAspect: { value: 1 },
+      uChamfer: { value: 0 },
+      uRadius: { value: 0 },
+      uEdgeOn: { value: 1 },
+    },
   });
   return backMaterial;
 }
@@ -249,8 +357,40 @@ export interface HoloPanelProps {
   /** 0..1 footer signal bars. */
   signal?: number;
   theme?: PanelTheme;
+  /**
+   * Overrides the theme's line, body and back-plate colours for a panel that
+   * belongs to something with its own identity — a technology's brand, say.
+   * The two themes cover the house styles; this covers the one-offs.
+   */
+  edgeColor?: string;
+  bodyColor?: string;
+  backColor?: string;
   /** Draw the depth back-plate. Off for panels stacked on other panels. */
   backPlate?: boolean;
+  /**
+   * Corner cut, in WORLD units. 0 keeps the plain rectangle. Cuts every corner
+   * at 45 degrees, and the frame, bevel and back plate all follow.
+   */
+  chamfer?: number;
+  /**
+   * Rounded corner, in WORLD units, as an alternative silhouette to `chamfer`.
+   * Both can be set, but one or the other is the point.
+   */
+  radius?: number;
+  /** 0 drops the frame line, brackets and LEDs, leaving only the housing. */
+  edge?: number;
+  /**
+   * Weight of the corner brackets, which burn far brighter than the frame line.
+   * Below 1 for panels sitting close to the camera, where full-strength corners
+   * bloom into four blobs.
+   */
+  bracket?: number;
+  /**
+   * Frame line weight in WORLD units, instead of the default fraction-of-height.
+   * Pass the same value to every panel in a group and they all carry one line
+   * weight however their heights differ.
+   */
+  lineWidth?: number;
   position?: [number, number, number];
   rotation?: [number, number, number];
   renderOrder?: number;
@@ -270,13 +410,34 @@ export function HoloPanel({
   chrome = false,
   signal = 0.6,
   theme = 'matrix',
+  edgeColor,
+  bodyColor,
+  backColor,
   backPlate = true,
+  chamfer = 0,
+  radius = 0,
+  edge = 1,
+  bracket = 1,
+  lineWidth,
   ...rest
 }: HoloPanelProps) {
   const mat = getPanelMaterial();
   const back = getBackMaterial();
   const geo = cachedPlane(width, height, 32, 24);
   const backGeo = cachedPlane(width * 1.03, height * 1.03);
+
+  /**
+   * How far the vertex curve bows the front plate away from the camera at its
+   * deepest point — the corners. It grows with the panel, and the back plate
+   * used to sit at a FIXED -0.09: on anything past roughly 7 x 5 world units the
+   * corners sank BEHIND the opaque, depth-writing back plate and were culled, so
+   * a large panel lost its frame corners and side edges and looked chopped off.
+   * Parking the plate behind the deepest the front can reach fixes it at every
+   * size, and the extra depth is invisible at these distances.
+   */
+  const curveDepth =
+    ((width * 0.5) ** 2 * 0.012 + (height * 0.5) ** 2 * 0.020) * curve;
+  const backZ = -(0.09 + curveDepth);
   const ref = useRef<THREE.Mesh>(null);
 
   useFrame(() => {
@@ -296,11 +457,17 @@ export function HoloPanel({
         <mesh
           geometry={backGeo}
           material={back}
-          position={[0, 0, -0.09]}
+          position={[0, 0, backZ]}
           raycast={() => null}
           visible={boot > 0.05 && opacity > 0.02}
           onBeforeRender={() => {
-            back.color.set(t.back);
+            const u = back.uniforms;
+            (u.uColor.value as THREE.Color).set(backColor ?? t.back);
+            // The back plate is 3% oversized, so its chamfer must be too, or the
+            // cut lands inside the front plate's and leaves a notch of backing.
+            u.uAspect.value = width / height;
+            u.uChamfer.value = (chamfer * 1.03) / height;
+            u.uRadius.value = (radius * 1.03) / height;
           }}
         />
       )}
@@ -324,8 +491,16 @@ export function HoloPanel({
           u.uChrome.value = chrome ? 1 : 0;
           u.uSignal.value = signal;
           u.uAspect.value = width / height;
-          (u.uBody.value as THREE.Color).set(t.body);
-          (u.uEdge.value as THREE.Color).set(t.edge);
+          // bd is measured in fractions of the panel's height, so the chamfer
+          // has to be converted into that space to stay a world-space size.
+          u.uChamfer.value = chamfer / height;
+          u.uRadius.value = radius / height;
+          u.uEdgeOn.value = edge;
+          u.uBracket.value = bracket;
+          // 0.0065 is where the default band sits, so k = 1 reproduces it exactly.
+          u.uLineK.value = lineWidth ? lineWidth / height / 0.0065 : 1;
+          (u.uBody.value as THREE.Color).set(bodyColor ?? t.body);
+          (u.uEdge.value as THREE.Color).set(edgeColor ?? t.edge);
           (u.uAccent.value as THREE.Color).set(t.accent);
         }}
       />

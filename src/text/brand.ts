@@ -43,6 +43,10 @@ export const SOCIAL_BRAND: Record<string, BrandMark> = {
   // lifted to its hover/active tint so the mark actually shows.
   linkedin: { color: '#3D9BE9', glow: '#8CCBFF', label: 'LinkedIn' },
   x: { color: '#E7E9EA', glow: '#ffffff', label: 'X' },
+  // YouTube red (#FF0000) has no headroom left under additive blending and
+  // blooms into a featureless blob; lifted and desaturated a touch so the
+  // play triangle keeps its shape.
+  youtube: { color: '#FF2D2D', glow: '#ff8a8a', label: 'YouTube' },
   // Fallbacks so an unlisted social still renders rather than disappearing.
   mail: { color: '#7dffa8', glow: '#d8ffe4', label: 'Email' },
 };

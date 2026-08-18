@@ -1,0 +1,36 @@
+{
+  "socials": [
+    {
+      "id": "github",
+      "label": "GitHub",
+      "handle": "@example",
+      "url": "https://github.com/example",
+      "icon": "/assets/social/github.svg",
+      "placeholder": true
+    },
+    {
+      "id": "linkedin",
+      "label": "LinkedIn",
+      "handle": "@example",
+      "url": "https://www.linkedin.com/in/example",
+      "icon": "/assets/social/linkedin.svg",
+      "placeholder": true
+    },
+    {
+      "id": "youtube",
+      "label": "YouTube",
+      "handle": "@example",
+      "url": "https://www.youtube.com/@example",
+      "icon": "/assets/social/youtube.svg",
+      "placeholder": true
+    },
+    {
+      "id": "x",
+      "label": "X",
+      "handle": "@example",
+      "url": "https://x.com/example",
+      "icon": "/assets/social/x.svg",
+      "placeholder": true
+    }
+  ]
+}

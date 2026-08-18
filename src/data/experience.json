@@ -1,0 +1,114 @@
+{
+  "experience": [
+    {
+      "id": "aponiar",
+      "company": "Aponiar Solutions Pvt. Ltd.",
+      "role": "Software Engineer",
+      "location": "Kolkata, West Bengal",
+      "start": "2018-02-07",
+      "end": "2020-07-07",
+      "highlights": [
+        "Built cross-platform mobile applications with Ionic and React Native.",
+        "Bridged web experiences to mobile across iOS and Android."
+      ],
+      "phase": "MOBILE MANIA",
+      "summary": "Cross-platform mobile engineering. Shipped Ionic and React Native apps that brought web products onto iOS and Android.",
+      "tech": [
+        "Ionic",
+        "React Native",
+        "Angular",
+        "JavaScript"
+      ],
+      "story": [
+        "Specialised in cross-platform mobile with Ionic and React Native, carrying web experiences onto devices that had no patience for a slow one.",
+        "Performance stopped being an abstraction here and became something users could feel."
+      ],
+      "logo": "/assets/companies/aponiar.svg",
+      "url": "https://example.com"
+    },
+    {
+      "id": "cbnits",
+      "company": "CBNITS",
+      "role": "Lead Frontend Developer",
+      "location": "Kolkata, West Bengal",
+      "start": "2020-08-05",
+      "end": "2024-08-31",
+      "highlights": [
+        "Led frontend architecture across multiple product teams.",
+        "Expanded into full-stack work with Node.js, Express and MongoDB."
+      ],
+      "phase": "FULLSTACK MADNESS",
+      "summary": "Led frontend architecture across several product teams, then expanded into full-stack work with Node, Express and MongoDB.",
+      "tech": [
+        "React",
+        "Node.js",
+        "Express",
+        "MongoDB",
+        "TypeScript"
+      ],
+      "story": [
+        "Promoted to lead the frontend, owning architecture across multiple product teams — decisions that outlived me and had to be defensible.",
+        "Went down the stack into Node, Express and MongoDB, and came back up having stopped seeing the layers as separate systems."
+      ],
+      "logo": "/assets/companies/cbnits.svg",
+      "url": "https://example.com"
+    },
+    {
+      "id": "nextzen",
+      "company": "NextZen Minds",
+      "role": "Technical Lead",
+      "location": "Global Remote",
+      "start": "2024-08-10",
+      "end": null,
+      "highlights": [
+        "Technical lead for frontend and creative engineering.",
+        "Interactive, animated interfaces and creative coding with Three.js."
+      ],
+      "phase": "GEEKY TECHLEAD",
+      "summary": "Technical lead for frontend and creative engineering — interactive, animated interfaces built with Three.js and custom shaders.",
+      "tech": [
+        "Three.js",
+        "React",
+        "Next.js",
+        "GLSL",
+        "TypeScript"
+      ],
+      "story": [
+        "Technical lead for frontend and creative engineering, working global remote on interactive, animated interfaces — the part of the craft I would do anyway, now the part I am paid for.",
+        "Three.js, shaders, and the conviction that a page can be an experience rather than a document."
+      ],
+      "logo": "/assets/companies/nextzen.svg",
+      "url": "https://example.com"
+    }
+  ],
+  "phases": [
+    {
+      "id": "beginning",
+      "title": "The Beginning",
+      "subtitle": "Academy of Technology — B.Tech, Electrical Engineering",
+      "yearsLabel": "2014 — 2018",
+      "blurb": "I graduated with a degree in Electrical Engineering, but during college I stumbled upon coding and it instantly clicked. What started as curiosity soon became passion; every problem felt like a puzzle waiting to be solved. That love for problem-solving pulled me into software development, where I found the perfect mix of creativity and logic."
+    },
+    {
+      "id": "mobile",
+      "title": "Mobile Mania",
+      "subtitle": "Cross-platform, everywhere at once",
+      "yearsLabel": "2018 — 2020",
+      "blurb": "I dived deeper into development and specialised in cross-platform mobile apps. Using React Native and Ionic I built applications that brought web experiences to mobile, bridging the gap between the two worlds. This phase shaped how I think about performance, user experience and scalability across platforms."
+    },
+    {
+      "id": "fullstack",
+      "title": "FullStack Madness",
+      "subtitle": "Down the stack, and back up again",
+      "yearsLabel": "2020 — 2024",
+      "blurb": "Expanded into full-stack development. Started working with backend technologies, databases and API development while keeping frontend expertise sharp — the point where I stopped seeing the stack as separate layers."
+    },
+    {
+      "id": "techlead",
+      "title": "Geeky TechLead",
+      "subtitle": "Creative coding as a discipline",
+      "yearsLabel": "2024 — Present",
+      "blurb": "Passionate about creative coding, building interactive animations and delightful user interfaces. Always exploring new JS libraries and pushing the boundaries of what a web experience can be."
+    }
+  ]
+}

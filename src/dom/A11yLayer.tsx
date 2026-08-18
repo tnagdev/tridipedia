@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { SECTIONS } from '@/state/sections';
 import { scrollToProgress } from '@/scroll/ScrollProvider';
-import { skills, experience, projects, socials } from '@/content/loadContent';
+import { content, skills, experience, projects, socials } from '@/content/loadContent';
 import { setUi } from '@/state/store';
 
 interface Target {
@@ -27,10 +27,20 @@ export function A11yLayer() {
       const [a, b] = at(id);
       return a + ((i + 0.5) / n) * (b - a);
     };
+    const aboutMid = (at('about')[0] + at('about')[1]) / 2;
     return [
+      // The About card renders email and phone as 3D text with no hotspot of
+      // their own, so these are the only way to reach them without a mouse.
+      ...(content.email
+        ? [{ id: 'about:email', label: `Email ${content.email}`, href: `mailto:${content.email}`, progress: aboutMid }]
+        : []),
+      ...(content.phone
+        ? [{ id: 'about:phone', label: `Phone ${content.phone}`, href: `tel:${content.phone.replace(/[^+0-9]/g, '')}`, progress: aboutMid }]
+        : []),
       ...skills.map((s, i) => ({
         id: `skill:${s.id}`,
         label: `${s.name} — ${s.proficiency}% proficiency, ${s.years} years`,
+        href: s.url ?? undefined,
         progress: spread('skills', i, skills.length),
       })),
       ...experience.map((j, i) => ({

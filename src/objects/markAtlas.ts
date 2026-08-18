@@ -1,10 +1,12 @@
 import * as THREE from 'three';
 import { svgDataUrl } from './socialMarks';
+import { navSvgDataUrl } from './navMarks';
+import { MARK_SOURCES } from '@/content/loadContent';
 
 /**
  * A single runtime-built atlas for every logo in the site — technology marks
- * loaded from public/icons/*.svg, and social marks authored inline in
- * socialMarks.ts.
+ * loaded from public/icons/*.svg, and social and navigation marks authored
+ * inline in socialMarks.ts and navMarks.ts.
  *
  * Same approach as the glyph atlas: built in-browser at boot, so no binary
  * assets enter the repo and adding a mark is a code change rather than an asset
@@ -27,7 +29,15 @@ export interface MarkAtlas {
   missing: string[];
 }
 
-/** Tech marks live on disk; the map is id -> filename (they differ for html/git). */
+/**
+ * Fallback filename map, kept for ids the data files do not name.
+ *
+ * The DATA now decides what a mark looks like: skills.json and social.json each
+ * carry an `icon` path under public/, and MARK_SOURCES turns those into URLs.
+ * This map is what is left of the old arrangement, where the only way to change
+ * a skill's art was to edit code. (The ids differ from the filenames for html
+ * and git, which is the sort of thing that belongs in data, not here.)
+ */
 const TECH_FILE: Record<string, string> = {
   react: 'react',
   angular: 'angular',
@@ -50,8 +60,12 @@ function loadImage(src: string): Promise<HTMLImageElement | null> {
 }
 
 function sourceFor(id: string): string | null {
-  if (TECH_FILE[id]) return `/icons/${TECH_FILE[id]}.svg`;
-  return svgDataUrl(id);
+  // Data first, then the built-ins. A mark named by the content wins, so
+  // dropping a file in public/assets and pointing the JSON at it is enough.
+  return MARK_SOURCES[id]
+    ?? (TECH_FILE[id] ? `/icons/${TECH_FILE[id]}.svg` : null)
+    ?? svgDataUrl(id)
+    ?? navSvgDataUrl(id);
 }
 
 const cache = new Map<string, Promise<MarkAtlas>>();

@@ -1,0 +1,103 @@
+{
+  "skills": [
+    {
+      "id": "react",
+      "name": "React Js",
+      "proficiency": 85,
+      "years": 5,
+      "color": "#61DBFB",
+      "blurb": "A library for building interfaces out of components, with a virtual DOM and one-way data flow.",
+      "url": "https://react.dev",
+      "note": "Dummy note — replace with a line about working with React Js.",
+      "icon": "/assets/skills/react.svg"
+    },
+    {
+      "id": "angular",
+      "name": "Angular",
+      "proficiency": 85,
+      "years": 5.5,
+      "color": "#DD0031",
+      "blurb": "A TypeScript-first application framework: dependency injection, RxJS streams and a full CLI.",
+      "url": "https://angular.dev",
+      "note": "Dummy note — replace with a line about working with Angular.",
+      "icon": "/assets/skills/angular.svg"
+    },
+    {
+      "id": "next",
+      "name": "Next Js",
+      "proficiency": 80,
+      "years": 3,
+      "color": "#FFFFFF",
+      "blurb": "The React framework for production — file-system routing, server rendering and static export.",
+      "url": "https://nextjs.org",
+      "note": "Dummy note — replace with a line about working with Next Js.",
+      "icon": "/assets/skills/next.svg"
+    },
+    {
+      "id": "js",
+      "name": "Javascript",
+      "proficiency": 90,
+      "years": 6,
+      "color": "#F7DF1E",
+      "blurb": "The language of the web. Prototypal, single-threaded and event-driven, standardised as ECMAScript.",
+      "url": "https://developer.mozilla.org/docs/Web/JavaScript",
+      "note": "Dummy note — replace with a line about working with Javascript.",
+      "icon": "/assets/skills/js.svg"
+    },
+    {
+      "id": "html",
+      "name": "HTML",
+      "proficiency": 80,
+      "years": 6,
+      "color": "#E34F26",
+      "blurb": "The markup that gives a page structure and meaning — the layer assistive tech actually reads.",
+      "url": "https://developer.mozilla.org/docs/Web/HTML",
+      "note": "Dummy note — replace with a line about working with HTML.",
+      "icon": "/assets/skills/html.svg"
+    },
+    {
+      "id": "css",
+      "name": "CSS",
+      "proficiency": 80,
+      "years": 6,
+      "color": "#1572B6",
+      "blurb": "The styling language of the web: the cascade, specificity, flexbox, grid and custom properties.",
+      "url": "https://developer.mozilla.org/docs/Web/CSS",
+      "note": "Dummy note — replace with a line about working with CSS.",
+      "icon": "/assets/skills/css.svg"
+    },
+    {
+      "id": "git",
+      "name": "Git",
+      "proficiency": 70,
+      "years": 6,
+      "color": "#F05032",
+      "blurb": "Distributed version control. Every clone is a complete repository with its own full history.",
+      "url": "https://git-scm.com",
+      "note": "Dummy note — replace with a line about working with Git.",
+      "icon": "/assets/skills/git.svg"
+    },
+    {
+      "id": "ionic",
+      "name": "Ionic",
+      "proficiency": 70,
+      "years": 6,
+      "color": "#4F8FF8",
+      "blurb": "A cross-platform UI toolkit that ships one web codebase to iOS, Android and the browser.",
+      "url": "https://ionicframework.com",
+      "note": "Dummy note — replace with a line about working with Ionic.",
+      "icon": "/assets/skills/ionic.svg"
+    },
+    {
+      "id": "firebase",
+      "name": "Firebase",
+      "proficiency": 70,
+      "years": 6,
+      "color": "#FFC107",
+      "blurb": "An app platform behind one SDK: authentication, Firestore, cloud functions and hosting.",
+      "url": "https://firebase.google.com",
+      "note": "Dummy note — replace with a line about working with Firebase.",
+      "icon": "/assets/skills/firebase.svg"
+    }
+  ]
+}

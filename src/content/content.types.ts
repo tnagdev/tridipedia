@@ -7,6 +7,14 @@ export interface Profile {
   brand: string;
   tagline: string;
   name: string;
+  /** Print name for the About card, e.g. "Tridibesh Nag". Falls back to `name`. */
+  fullName: string | null;
+  /** Job designation, e.g. "Technical Lead". Rendered uppercase on the card. */
+  designation: string | null;
+  /** Discipline line under the designation, e.g. "Frontend & Creative Engineer". */
+  title: string | null;
+  /** Profile handle, WITH the leading "@". Rendered by the About section. */
+  handle: string;
   /** Rotator words, WITHOUT the trailing "Developer". */
   roles: string[];
   /** Years of experience is DERIVED from this, never stored. */
@@ -22,6 +30,21 @@ export interface Skill {
   proficiency: number;
   years: number;
   color: Hex;
+  /** One line on what the technology IS. Shown on the skill podium's panel. */
+  blurb: string;
+  /** The technology's own home page, opened from the panel. */
+  url: string;
+  /**
+   * A personal line about working with it. Null falls back to a line derived
+   * from `years` and `proficiency`, so the panel is never empty.
+   */
+  note: string | null;
+  /**
+   * Path under public/ for this skill's mark. Null falls back to the built-in
+   * icon set. This is what lets the data file, rather than a map in the code,
+   * decide what a skill looks like.
+   */
+  icon: string | null;
 }
 
 export interface Job {
@@ -34,6 +57,10 @@ export interface Job {
   /** null means present. */
   end: string | null;
   highlights: string[];
+  /** Path under public/ for the company mark. */
+  logo: string | null;
+  /** The company's own site. */
+  url: string | null;
   /** Career-phase label for this role, e.g. "MOBILE MANIA". */
   phase: string;
   /** One-paragraph description shown in the card's detail popup. */
@@ -64,9 +91,19 @@ export interface CareerPhase {
 export interface Project {
   id: string;
   title: string;
+  /** One line, for the card face. */
   summary: string;
+  /** The long version — what it was, what it cost, what you learned. */
+  details: string;
   tech: string[];
+  /** What you did on it. */
+  role: string | null;
+  year: string | null;
+  /** Path under public/, e.g. "/assets/projects/foo.svg". Resolved by assetUrl(). */
+  thumbnail: string | null;
+  /** Live site. */
   url: string | null;
+  /** Source. */
   repo: string | null;
   /** true => render the empty-frame treatment rather than a broken card. */
   placeholder: boolean;
@@ -77,6 +114,8 @@ export interface Social {
   label: string;
   handle: string;
   url: string | null;
+  /** Path under public/ for the mark. Null falls back to the built-in set. */
+  icon: string | null;
   placeholder: boolean;
 }
 
@@ -137,6 +176,11 @@ export interface SiteContent {
   meta: SiteMeta;
   profile: Profile;
   email: string | null;
+  /**
+   * Display form, e.g. "+91 98765 43210". Root-level beside `email` rather than
+   * on `profile`, because the two are only ever read as a pair.
+   */
+  phone: string | null;
   skills: Skill[];
   experience: Job[];
   phases: CareerPhase[];

@@ -16,4 +16,10 @@ export const F = {
   time: 0,
   dt: 0,
   camPos: new THREE.Vector3(),
+  /**
+   * 0..1 finale surge on the bloom pass. Written by ContactSection, read by
+   * Effects. A section MUST reset it on unmount or the whole site stays blown
+   * out after a scroll back.
+   */
+  bloom: 0,
 };

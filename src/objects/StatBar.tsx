@@ -73,6 +73,8 @@ export function StatBar({
   opacity = 1,
   position,
   rotation,
+  renderOrder = 0,
+  depthTest = true,
 }: {
   width: number;
   height?: number;
@@ -82,6 +84,9 @@ export function StatBar({
   opacity?: number;
   position?: [number, number, number];
   rotation?: [number, number, number];
+  renderOrder?: number;
+  /** Off for a bar that belongs to a screen-space overlay rather than the world. */
+  depthTest?: boolean;
 }) {
   const mat = getBarMaterial();
   const geo = cachedPlane(width, height);
@@ -106,8 +111,11 @@ export function StatBar({
       material={mat}
       position={position}
       rotation={rotation}
+      renderOrder={renderOrder}
       raycast={() => null}
       onBeforeRender={() => {
+        // Per-draw, because the material is shared with every other bar.
+        mat.depthTest = depthTest;
         mat.uniforms.uValue.value = shown.current;
         mat.uniforms.uOpacity.value = opacity;
         mat.uniforms.uSegments.value = segments;

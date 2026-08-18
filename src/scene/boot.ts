@@ -1,11 +1,9 @@
 import { buildGlyphAtlas } from '@/rain/glyphAtlas';
 import { preloadUiFont } from '@/text/preloadFonts';
 import { detectTier, type TierName } from '@/perf/tier';
-import { profile } from '@/content/loadContent';
 
 export interface BootResult {
   tier: TierName;
-  avatarSrc: string | null;
 }
 
 function setProgress(pct: number, msg?: string) {
@@ -20,16 +18,6 @@ function setProgress(pct: number, msg?: string) {
   }
 }
 
-/** Resolves to the URL if the image exists, or null — so a missing avatar degrades silently. */
-function probeImage(src: string): Promise<string | null> {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => resolve(src);
-    img.onerror = () => resolve(null);
-    img.src = src;
-  });
-}
-
 export async function boot(): Promise<BootResult> {
   setProgress(4, 'DETECTING HARDWARE');
   const tierPromise = detectTier();
@@ -42,13 +30,10 @@ export async function boot(): Promise<BootResult> {
   setProgress(48, 'PRELOADING TYPEFACE');
   await preloadUiFont();
 
-  setProgress(74, 'RESOLVING ASSETS');
-  const avatarSrc = await probeImage(profile.avatar);
-
   setProgress(88, 'COMPILING SHADERS');
   const tier = await tierPromise;
 
-  return { tier, avatarSrc };
+  return { tier };
 }
 
 export function finishLoader() {

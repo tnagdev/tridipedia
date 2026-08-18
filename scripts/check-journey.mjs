@@ -9,7 +9,10 @@
 import * as THREE from 'three';
 import { readFileSync } from 'node:fs';
 
-const site = JSON.parse(readFileSync(new URL('../src/content/site.json', import.meta.url), 'utf8'));
+// The content is split across src/data/ — this check needs the journey and the
+// sections from site.json, and the skill count from skills.json.
+const read = (f) => JSON.parse(readFileSync(new URL(`../src/data/${f}`, import.meta.url), 'utf8'));
+const site = { ...read('site.json'), ...read('skills.json') };
 const kfs = [...site.journey.keyframes].sort((a, b) => a.t - b.t);
 
 const pos = new THREE.CatmullRomCurve3(kfs.map((k) => new THREE.Vector3(...k.pos)), false, 'catmullrom', site.journey.curveTension);
@@ -82,14 +85,15 @@ if (maxStep / mean > 3.0) problems.push(`speed spike: max step ${maxStep.toFixed
 const PROF = [85, 85, 80, 90, 80, 80, 70, 70, 70];
 const anchors = {
   hero: [[0, 3.4, -6], [0, 0.3, -6]],
-  about: [[0, 1.4, -40], [4.6, 1.2, -40]],
+  // the bento: portrait tile, identity card, skills tile
+  about: [[-5.9, 2.3, -41.2], [0.8, 3.9, -41.2], [7.3, -0.4, -41.2]],
   skills: Array.from({ length: 9 }, (_, i) => {
     const row = i % 2 === 0 ? -1 : 1;
     return [row * (7 + (i % 3) * 1.6), -4 + ((PROF[i] / 100) * 26) / 2, -74 - i * 6];
   }),
   experience: [[13, 0.5, -170], [-13, 0.5, -200], [13, 0.5, -235]],
   projects: [[-9.2, 2, -292], [0, 2, -292], [9.2, 2, -292]],
-  contact: [[0, 22, -350], [0, 18.6, -350]],
+  contact: [[0, 21.5, -350.5], [0, 26.5, -352]],
 };
 
 const fwd = new THREE.Vector3();

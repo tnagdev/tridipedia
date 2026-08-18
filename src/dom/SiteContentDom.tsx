@@ -22,7 +22,8 @@ export function SiteContentDom({ variant }: { variant: 'sr' | 'visible' }) {
           {profile.brand} — {profile.tagline}
         </h1>
         <p>
-          {profile.name}, {experience[experience.length - 1]?.role} at{' '}
+          {profile.fullName ?? profile.name},{' '}
+          {profile.designation ?? experience[experience.length - 1]?.role} at{' '}
           {experience[experience.length - 1]?.company}. Based in {profile.location}.{' '}
           {yearsOfExperience} years building for the web.
         </p>
@@ -40,6 +41,16 @@ export function SiteContentDom({ variant }: { variant: 'sr' | 'visible' }) {
           {skills.map((s) => (
             <li key={s.id}>
               <strong>{s.name}</strong> — {s.proficiency}% proficiency, {s.years} years
+              {s.blurb ? <>. {s.blurb}</> : null}
+              {s.note ? <> {s.note}</> : null}
+              {s.url ? (
+                <>
+                  {' '}
+                  <a href={s.url} rel="noopener noreferrer" target="_blank">
+                    Official site
+                  </a>
+                </>
+              ) : null}
             </li>
           ))}
         </ul>
@@ -107,6 +118,13 @@ export function SiteContentDom({ variant }: { variant: 'sr' | 'visible' }) {
           </p>
         ) : (
           <p>Email address not published yet.</p>
+        )}
+        {content.phone ? (
+          <p>
+            <a href={`tel:${content.phone.replace(/[^+0-9]/g, '')}`}>{content.phone}</a>
+          </p>
+        ) : (
+          <p>Phone number not published yet.</p>
         )}
         <ul>
           {socials.map((s) => (

@@ -24,8 +24,46 @@ function readScroll() {
   F.raw = limit > 0 ? Math.min(1, Math.max(0, window.scrollY / limit)) : 0;
 }
 
+let lockedAt: number | null = null;
+
+function onLockedScroll() {
+  if (lockedAt === null) return;
+  if (Math.abs(window.scrollY - lockedAt) > 0.5) window.scrollTo(0, lockedAt);
+}
+
+/**
+ * Freezes the journey where it stands, for a modal that owns the screen.
+ *
+ * Deliberately NOT overflow:hidden. The tall spacer IS the scroll range, so
+ * collapsing it takes scrollHeight to zero, drops scrollY to 0 with it, and
+ * fires the camera straight back to the hero — the page would appear to teleport
+ * the moment a popup opened. Instead Lenis is stopped so it stops consuming
+ * wheel input, and anything that still moves the document is snapped back to
+ * where the lock was taken.
+ */
+export function setScrollLock(locked: boolean) {
+  if (locked) {
+    if (lockedAt !== null) return;
+    lockedAt = window.scrollY;
+    lenisInstance?.stop();
+    window.addEventListener('scroll', onLockedScroll, { passive: true });
+  } else {
+    if (lockedAt === null) return;
+    lockedAt = null;
+    window.removeEventListener('scroll', onLockedScroll);
+    lenisInstance?.start();
+  }
+}
+
+export function isScrollLocked() {
+  return lockedAt !== null;
+}
+
 /** All programmatic scrolling MUST go through this, or it fights Lenis. */
 export function scrollToProgress(t: number, opts?: { immediate?: boolean; duration?: number }) {
+  // A programmatic move is always deliberate — the nav, a deep link, the return
+  // to origin. Releasing here is what stops a lock from trapping the journey.
+  setScrollLock(false);
   const target = Math.max(0, Math.min(1, t)) * scrollLimit();
   if (lenisInstance) {
     lenisInstance.scrollTo(target, { duration: opts?.duration ?? 2.2, immediate: opts?.immediate });

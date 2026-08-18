@@ -44,17 +44,20 @@ the camera actually arrives where each section's content is.
 
 ## Visual vocabulary
 
-Sections are composed from five shared objects in `src/objects/`, not bespoke
+Sections are composed from a handful of shared objects in `src/objects/`, not bespoke
 geometry per section — this is what keeps the world coherent and the draw-call
 budget countable:
 
 | component | role |
 | --- | --- |
-| `HoloPanel` | framed console. All chrome (brackets, header LEDs, footer bars, bevel, boot-open) drawn analytically in one shader, costing zero text instances. Opaque back plate so it genuinely occludes the rain. Themes: `matrix`, `ark` |
+| `HoloPanel` | framed console. All chrome (brackets, header LEDs, footer bars, bevel, boot-open) drawn analytically in one shader, costing zero text instances. Opaque back plate so it genuinely occludes the rain, chamfered in step with the front. Themes: `matrix`, `ark`; `chamfer` cuts the corners |
 | `MarkTiles` | interactive hex tiles carrying real brand logos — hex frame, gauge arc and logo in ONE instanced draw, so N tiles cost one call. Used by both Skills and the social widgets |
 | `HudBracket` | targeting brackets + leader line, so labels read as *scanned* rather than placed |
 | `Conduit` | glowing run with travelling pulses, connecting things across a section |
 | `StatBar` | segmented instrument readout, drawn analytically on one quad |
+| `Nav3D` | the console: a camera-parented liquid column down the left edge, collapsed to badges and sliding open on hover. Its silhouette is a graph, `x = edge(y)`, so it drifts and bulges around the live section; the row's glow spills past that edge because the quad is padded and the housing draws its own alpha. Opaque body, so it cuts the rain instead of tinting it. Badges, brand mark and operator come from the shared mark atlas |
+| `NineSlice` | any container, sliced with CSS `border-image` semantics — four independent borders, stretched middle, optional `fill`. Source is either an authored image (`src` + `slice` in its own pixels) or the sprite sheet `frameAtlas` generates at boot; a missing image falls back to the drawn one. Corner art holds its size at any box size, so an animating panel never smears |
+| `AsciiPortrait` | the block self-portrait carried over from the old site, uploaded as a one-texel-per-character mask and drawn on one quad. Interior cells settle into blocks, silhouette cells keep flickering as rain glyphs |
 
 Layout comes from `panelLayout.ts`: text positions are derived from the panel's
 own dimensions rather than hand-tuned world coordinates, which is what stops

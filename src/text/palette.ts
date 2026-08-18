@@ -6,5 +6,7 @@ export const PALETTE = {
   textDim: '#3f9e5c',
   textBright: '#e8fff0',
   accent: '#b6ffd0',
+  /** Line colour for HUD chrome. Emitted above 1.0 so bloom makes a tube of it. */
+  neon: '#4dff9b',
   outline: '#000000',
 } as const;

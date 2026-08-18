@@ -15,11 +15,9 @@ import type { TierSpec } from '@/perf/tier';
  */
 export function WarmUp({
   tier,
-  avatarSrc,
   onReady,
 }: {
   tier: TierSpec;
-  avatarSrc: string | null;
   onReady: () => void;
 }) {
   const gl = useThree((s) => s.gl);
@@ -60,7 +58,7 @@ export function WarmUp({
   if (!mounted) return null;
   return (
     <group visible={false} position={[0, -100000, 0]}>
-      <World tier={tier} avatarSrc={avatarSrc} forceAll />
+      <World tier={tier} forceAll />
     </group>
   );
 }

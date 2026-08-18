@@ -8,6 +8,16 @@ import { clamp01 } from '@/scroll/easing';
 import type { RainConfig } from '@/content/content.types';
 
 const SCRATCH_FLOW = new THREE.Vector3();
+const SCRATCH_Q = new THREE.Quaternion();
+const SCRATCH_QT = new THREE.Quaternion();
+/**
+ * Axis to rotate a flow direction about when the two ends are exactly opposed.
+ *
+ * +X sweeps a vertical fall through (0, 0, -1) — straight down the tunnel, the
+ * same look the Experience section already ships — rather than through some
+ * arbitrary sideways drift.
+ */
+const FLIP_AXIS = new THREE.Vector3(1, 0, 0);
 const SCRATCH_POINT = new THREE.Vector3();
 const SCRATCH_TAIL = new THREE.Color();
 const SCRATCH_HEAD = new THREE.Color();
@@ -79,7 +89,30 @@ export function RainDriver() {
     u.uConverge.value = mix(a.converge, b.converge);
     u.uBillboardLock.value = mix(a.billboardLock, b.billboardLock);
 
-    SCRATCH_FLOW.copy(a.flow).lerp(b.flow, blend).normalize();
+    /**
+     * ROTATE the flow between sections, never lerp it.
+     *
+     * A lerp between two unit vectors then re-normalised is not a turn, it is a
+     * cut: the result is a unit vector for every blend except the midpoint, so
+     * the fall snaps from one direction to the other and spends one frame
+     * somewhere undefined. Projects (0,-1,0) into Contact (0,1,0) is the worst
+     * case of it — exactly opposed, so the lerp passes through the ZERO vector,
+     * and normalize() is divideScalar(length() || 1), which leaves zero as
+     * zero. With uFlowDir at zero every column in the world collapses onto its
+     * own origin: the entire rainfall freezes into stationary points for a
+     * frame, in the middle of the site's finale.
+     *
+     * Opposed directions have no unique arc between them, so setFromUnitVectors
+     * cannot help there either — that case gets an explicit axis.
+     */
+    if (a.flow.dot(b.flow) < -0.9995) {
+      SCRATCH_Q.setFromAxisAngle(FLIP_AXIS, Math.PI * blend);
+      SCRATCH_FLOW.copy(a.flow).applyQuaternion(SCRATCH_Q);
+    } else {
+      SCRATCH_QT.setFromUnitVectors(a.flow, b.flow);
+      SCRATCH_Q.identity().slerp(SCRATCH_QT, blend);
+      SCRATCH_FLOW.copy(a.flow).applyQuaternion(SCRATCH_Q);
+    }
     (u.uFlowDir.value as THREE.Vector3).copy(SCRATCH_FLOW);
 
     SCRATCH_POINT.copy(a.converged).lerp(b.converged, blend);

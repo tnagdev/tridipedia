@@ -1,0 +1,57 @@
+{
+  "projects": [
+    {
+      "id": "aurora-dashboard",
+      "title": "Aurora Dashboard",
+      "summary": "Dummy project — a realtime analytics dashboard with streaming charts.",
+      "details": "Dummy detail copy. Replace this with the story of the project: what problem it solved, what you built, the interesting constraint, and what you would do differently. Two or three sentences is plenty.",
+      "tech": [
+        "React",
+        "TypeScript",
+        "D3",
+        "WebSocket"
+      ],
+      "role": "Design and build",
+      "year": "2025",
+      "thumbnail": "/assets/projects/aurora-dashboard.svg",
+      "url": "https://example.com/aurora",
+      "repo": "https://github.com/example/aurora-dashboard",
+      "placeholder": true
+    },
+    {
+      "id": "helix-mobile",
+      "title": "Helix Mobile",
+      "summary": "Dummy project — a cross-platform app shipped to iOS and Android.",
+      "details": "Dummy detail copy. Replace with the real account: the platform constraints, how the shared codebase was organised, and what shipping to two stores from one repo actually cost.",
+      "tech": [
+        "Ionic",
+        "Angular",
+        "Capacitor",
+        "Firebase"
+      ],
+      "role": "Frontend lead",
+      "year": "2024",
+      "thumbnail": "/assets/projects/helix-mobile.svg",
+      "url": "https://example.com/helix",
+      "repo": "https://github.com/example/helix-mobile",
+      "placeholder": true
+    },
+    {
+      "id": "lumen-site",
+      "title": "Lumen",
+      "summary": "Dummy project — a WebGL marketing site with a scroll-driven camera.",
+      "details": "Dummy detail copy. Replace with what the piece was, how the scroll drove the scene, and the performance budget you held it to on mid-range hardware.",
+      "tech": [
+        "Three.js",
+        "GLSL",
+        "Next.js"
+      ],
+      "role": "Creative engineering",
+      "year": "2023",
+      "thumbnail": "/assets/projects/lumen-site.svg",
+      "url": "https://example.com/lumen",
+      "repo": "https://github.com/example/lumen",
+      "placeholder": true
+    }
+  ]
+}

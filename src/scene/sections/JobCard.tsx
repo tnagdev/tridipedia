@@ -2,38 +2,47 @@ import { useMemo, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { HoloPanel } from '@/objects/HoloPanel';
-import { HudBracket } from '@/objects/HudBracket';
 import { TerminalText, type TroikaText } from '@/text/TerminalText';
 import { PALETTE } from '@/text/palette';
 import { panelBox } from '@/objects/panelLayout';
 import { F } from '@/state/frameState';
 import { clamp01 } from '@/scroll/easing';
-import { setUi, useUi } from '@/state/store';
 import type { Job } from '@/content/content.types';
-import { jobRangeLabel, jobDurationLabel } from '@/content/loadContent';
+import { jobRangeLabel } from '@/content/loadContent';
 
 /**
  * A job as a FLIGHT CARD.
  *
  * Choreography across the card's slice of the section:
- *   0.00 - 0.28  approach : parked on its canyon wall, yawed and foreshortened
+ *   0.00 - 0.28  approach : lying flat on its canyon wall, edge-on
  *   0.28 - 0.42  dock     : swings in, rotation flattens, lands dead centre
  *   0.42 - 0.72  hold     : locked square-on while the story types out
- *   0.72 - 1.00  depart   : tips back to perspective and rips out past you
+ *   0.72 - 1.00  depart   : tips back onto the wall and rips out past you
  *
  * The dock target is recomputed EVERY FRAME from the live camera basis rather
  * than baked as a world coordinate. That is what makes the card land centred at
  * any point on the spline and at any fov — and the experience fov is keyframed
- * 58 -> 78, so a baked position would drift badly. The same technique fixed the
- * skills console earlier.
+ * 58 -> 78, so a baked position would drift badly.
  *
  * Parallax falls out of this for free: the docked card tracks the camera 1:1
  * while the wall monoliths and the timeline conduit stay world-anchored and
  * slide past, so near and far move at visibly different rates.
+ *
+ * The parked pose is FLUSH WITH ITS MONOLITH — same plane, same height, same
+ * centre. It used to sit a metre higher and yawed 35 degrees off the wall so it
+ * stayed readable on approach, which meant the card and the slab it belongs to
+ * were visibly two unrelated objects. Alignment is worth more than readability
+ * in a pose you spend a fraction of a second in.
  */
 
-const CARD_W = 15.5;
-const CARD_H = 9.2;
+/**
+ * Wider and taller than the 15.5 x 9.2 it replaced, but not as tall as it first
+ * grew: at 10.4 the re-flowed copy left a third of the card empty underneath.
+ * The story types in from the top, so what slack remains sits at the bottom on
+ * purpose — it is where the text is still arriving.
+ */
+const CARD_W = 17.4;
+const CARD_H = 9.4;
 /** Stand-off from the camera when docked. Chosen so the card fills ~62% of frame height at fov 68. */
 const DOCK_DIST = 15.5;
 
@@ -48,30 +57,76 @@ const EULER = new THREE.Euler();
 
 const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
+/**
+ * 0 parked -> 1 docked -> 0 departed, from the card's own local progress.
+ *
+ * Exported because the section needs the same number to fade the year markers
+ * out from under a docked card, and two copies of this curve would drift.
+ */
+export function cardDockAt(local: number): number {
+  const inCurve = clamp01((local - 0.28) / 0.14);
+  const outCurve = 1 - clamp01((local - 0.72) / 0.28);
+  return Math.min(easeInOutCubic(inCurve), easeInOutCubic(outCurve));
+}
+
+/* ------------------------------- the layout ------------------------------ */
+
+/**
+ * Content is measured from a card shrunk by the margin first.
+ *
+ * panelBox's own padding is proportional AND spends only 0.4 of it vertically,
+ * so on its own the copy sat about 0.2 from the top edge — technically inside
+ * the frame, visually crammed against it. Insetting the box gives an even
+ * margin on all four sides that does not change when the card is resized.
+ */
+const CARD_INSET = 0.55;
+const BOX = panelBox({
+  width: CARD_W - CARD_INSET * 2,
+  height: CARD_H - CARD_INSET * 2,
+  header: 0,
+});
+
+/**
+ * Company at 0.62, not larger: "Aponiar Solutions Pvt. Ltd." is 27 characters,
+ * and anything bigger wraps to a second line. Every row here is anchored from
+ * its TOP, so a wrap would grow the block UPWARD out of the card and put the
+ * overflow through the panel's own top edge — which is exactly what it did.
+ */
+const S = { company: 0.62, date: 0.42, role: 0.44, story: 0.44 };
+/** Company and date share the top line; role under it; the story fills the rest. */
+const ROW = {
+  head: BOX.top,
+  /** Dropped by half the size difference, so the smaller date optically centres on the company. */
+  date: BOX.top - (S.company - S.date) * 0.5,
+  role: BOX.top - S.company - 0.30,
+  story: BOX.top - S.company - 0.30 - S.role - 0.50,
+};
+/** Leaves the date its own column on the right so the two can never collide. */
+const COMPANY_MAX = BOX.width - 5.2;
+
 export interface JobCardProps {
   job: Job;
   /** Which wall this card parks on: +1 right, -1 left. */
   side: 1 | -1;
-  /** World Z of the card's parked position on the wall. */
-  parkZ: number;
+  /** World position of the card's parked pose, flush with its monolith. */
   parkX: number;
+  parkY: number;
+  parkZ: number;
   /** This card's slice of the section, in absolute journey progress. */
   range: [number, number];
   index: number;
 }
 
-export function JobCard({ job, side, parkZ, parkX, range, index }: JobCardProps) {
+export function JobCard({ job, side, parkX, parkY, parkZ, range, index }: JobCardProps) {
   const camera = useThree((s) => s.camera);
   const group = useRef<THREE.Group>(null);
   const storyRef = useRef<TroikaText>(null);
-  const openId = useUi((s) => s.openCard);
-  const hovered = useUi((s) => s.hovered) === `job:${job.id}`;
-  const isOpen = openId === job.id;
 
-  const state = useRef({ dock: 0, opacity: 0, boot: 0 });
-
-  const storyText = useMemo(() => job.story.join('\n'), [job.story]);
-  const box = useMemo(() => panelBox({ width: CARD_W, height: CARD_H, header: 0.16 }), []);
+  const state = useRef({ dock: 0, opacity: 0 });
+  // A blank line BETWEEN paragraphs. Each story entry is a paragraph that troika
+  // wraps to the card's own width now, rather than a line pre-broken by hand for
+  // one particular card size.
+  const storyText = useMemo(() => job.story.join('\n\n'), [job.story]);
 
   useFrame((_, delta) => {
     const g = group.current;
@@ -79,19 +134,10 @@ export function JobCard({ job, side, parkZ, parkX, range, index }: JobCardProps)
 
     const [a, b] = range;
     const local = clamp01((F.smooth - a) / Math.max(b - a, 1e-6));
-
-    // --- dock curve: 0 parked -> 1 docked -> 0 departed ---
-    const inCurve = clamp01((local - 0.28) / 0.14);
-    const outCurve = 1 - clamp01((local - 0.72) / 0.28);
-    const dockTarget = Math.min(easeInOutCubic(inCurve), easeInOutCubic(outCurve));
+    const dockTarget = cardDockAt(local);
 
     // Visible slightly beyond its own slice so cards cross-fade rather than pop.
-    // The card also yields entirely while its OWN dossier is open — the popup
-    // sits in front of it at the same camera-relative anchor, so leaving both
-    // up superimposes two sets of text on each other.
-    const vis = clamp01((local - 0.02) / 0.12)
-      * (1 - clamp01((local - 0.9) / 0.1))
-      * (isOpen ? 0 : 1);
+    const vis = clamp01((local - 0.02) / 0.12) * (1 - clamp01((local - 0.9) / 0.1));
     state.current.opacity += (vis - state.current.opacity) * Math.min(1, delta * 8);
     state.current.dock += (dockTarget - state.current.dock) * Math.min(1, delta * 10);
     const dock = state.current.dock;
@@ -99,9 +145,9 @@ export function JobCard({ job, side, parkZ, parkX, range, index }: JobCardProps)
     g.visible = state.current.opacity > 0.004;
     if (!g.visible) return;
 
-    // --- parked pose: on the wall, yawed back up the corridor ---
-    PARK.set(parkX, 1.6, parkZ);
-    EULER.set(0, side > 0 ? -Math.PI / 2 + 0.62 : Math.PI / 2 - 0.62, side * 0.06);
+    // --- parked pose: flush with the monolith, facing across the canyon ---
+    PARK.set(parkX, parkY, parkZ);
+    EULER.set(0, side > 0 ? -Math.PI / 2 : Math.PI / 2, 0);
     PARK_Q.setFromEuler(EULER);
 
     // --- docked pose: dead centre in front of the camera, square-on ---
@@ -118,8 +164,7 @@ export function JobCard({ job, side, parkZ, parkX, range, index }: JobCardProps)
     g.quaternion.copy(PARK_Q).slerp(TMP_Q, dock);
 
     // Slight scale-up on dock so it reads as coming toward you.
-    const s = 0.62 + 0.38 * dock;
-    g.scale.setScalar(s);
+    g.scale.setScalar(0.62 + 0.38 * dock);
 
     // --- story types out while docked, paced by scroll ---
     const story = storyRef.current;
@@ -132,131 +177,68 @@ export function JobCard({ job, side, parkZ, parkX, range, index }: JobCardProps)
         story.clipRect = [-40, bb.max.y - h * reveal, 40, bb.max.y + 1];
       }
     }
-
-    state.current.boot += ((dock > 0.15 ? 1 : 0) - state.current.boot) * Math.min(1, delta * 4);
   });
-
-  const opacity = state.current.opacity;
 
   return (
     <group ref={group}>
       <HoloPanel
         width={CARD_W}
         height={CARD_H}
-        header={0.16}
-        footer={0.08}
-        fill={0.19}
+        radius={0.5}
+        header={0}
+        footer={0}
+        fill={0.2}
+        grid={0.5}
         curve={0.5}
-        opacity={1}
-        boot={1}
-        lock={1}
+        lineWidth={0.04}
+        bracket={0.34}
         signal={0.4 + index * 0.2}
-        theme={isOpen ? 'ark' : 'matrix'}
-      />
-      <HudBracket
-        width={CARD_W + 1.1}
-        height={CARD_H + 1.0}
-        lock={hovered || isOpen ? 1 : 0.7}
-        opacity={hovered || isOpen ? 1 : 0.6}
-        color={isOpen ? '#FFB23F' : PALETTE.accent}
-        position={[0, 0, 0.02]}
       />
 
-      {/* header: phase tag left, date range right */}
+      {/* company left, dates right, on one line */}
       <TerminalText
-        position={[box.left, box.headerY, 0.06]}
+        position={[BOX.left, ROW.head, 0.06]}
         anchorX="left"
-        fontSize={box.captionSize}
-        color={isOpen ? '#FFB23F' : PALETTE.accent}
-        letterSpacing={0.18}
-      >
-        {job.phase}
-      </TerminalText>
-      <TerminalText
-        position={[box.right, box.headerY, 0.06]}
-        anchorX="right"
-        fontSize={box.captionSize}
-        color={PALETTE.textDim}
-      >
-        {jobRangeLabel(job)}
-      </TerminalText>
-
-      {/* company + role */}
-      <TerminalText
-        position={[box.left, box.top - box.titleSize * 0.5, 0.06]}
-        anchorX="left"
-        fontSize={box.titleSize}
+        anchorY="top"
+        fontSize={S.company}
         color={PALETTE.textBright}
-        maxWidth={box.width}
+        maxWidth={COMPANY_MAX}
       >
         {job.company}
       </TerminalText>
       <TerminalText
-        position={[box.left, box.top - box.titleSize * 1.9, 0.06]}
+        position={[BOX.right, ROW.date, 0.06]}
+        anchorX="right"
+        anchorY="top"
+        fontSize={S.date}
+        color={PALETTE.textDim}
+        letterSpacing={0.06}
+      >
+        {jobRangeLabel(job)}
+      </TerminalText>
+
+      <TerminalText
+        position={[BOX.left, ROW.role, 0.06]}
         anchorX="left"
-        fontSize={box.bodySize}
-        color={PALETTE.text}
+        anchorY="top"
+        fontSize={S.role}
+        color={PALETTE.accent}
       >
         {`${job.role}  ·  ${job.location}`}
       </TerminalText>
 
-      {/* the engineer's log */}
       <TerminalText
         ref={storyRef as never}
-        position={[box.left, box.top - box.titleSize * 3.0, 0.06]}
+        position={[BOX.left, ROW.story, 0.06]}
         anchorX="left"
         anchorY="top"
-        fontSize={box.bodySize * 0.94}
-        lineHeight={box.lineHeight}
-        maxWidth={box.width}
+        fontSize={S.story}
+        lineHeight={1.5}
+        maxWidth={BOX.width}
         color={PALETTE.text}
       >
         {storyText}
       </TerminalText>
-
-      {/* footer: duration + the click affordance */}
-      <TerminalText
-        position={[box.left, box.footerY, 0.06]}
-        anchorX="left"
-        fontSize={box.captionSize}
-        color={PALETTE.textDim}
-      >
-        {jobDurationLabel(job)}
-      </TerminalText>
-      <TerminalText
-        position={[box.right, box.footerY, 0.06]}
-        anchorX="right"
-        fontSize={box.captionSize}
-        color={hovered ? PALETTE.textBright : PALETTE.textDim}
-      >
-        {isOpen ? '[ CLOSE ]' : '[ OPEN DOSSIER ]'}
-      </TerminalText>
-
-      {/* click target — only meaningful once the card is actually docked */}
-      <mesh
-        position={[0, 0, 0.1]}
-        visible={false}
-        onPointerOver={(e) => {
-          if (state.current.dock < 0.5) return;
-          e.stopPropagation();
-          setUi({ hovered: `job:${job.id}` });
-          document.body.style.cursor = 'pointer';
-        }}
-        onPointerOut={() => {
-          setUi({ hovered: null });
-          document.body.style.cursor = 'auto';
-        }}
-        onClick={(e) => {
-          if (state.current.dock < 0.5) return;
-          e.stopPropagation();
-          setUi({ openCard: isOpen ? null : job.id });
-        }}
-      >
-        <planeGeometry args={[CARD_W, CARD_H]} />
-      </mesh>
-
-      {/* keeps `opacity` referenced so the group fade is not optimised away */}
-      <group visible={opacity > 0} />
     </group>
   );
 }

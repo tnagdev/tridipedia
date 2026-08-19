@@ -113,6 +113,16 @@ export function sectionIndexAt(t: number): number {
   return list.length - 1;
 }
 
+/**
+ * Strips the scheme so a URL reads as a destination rather than a string.
+ *
+ * Lives here, not next to either renderer, because BOTH modes print it beside
+ * the project title and the two must show the same string.
+ */
+export function hostOf(url: string): string {
+  return url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+}
+
 /* ---------- date helpers: the source data was malformed, so normalise once ---------- */
 
 export function jobStart(j: Job): Date {
@@ -161,6 +171,8 @@ export function allCharacters(): string {
     ]),
     ...projects.flatMap((p) => [
       p.title, p.summary, p.details ?? '', p.role ?? '', p.year ?? '', ...p.tech,
+      // The dossier prints the host beside the title, so it is rendered copy.
+      p.url ? hostOf(p.url) : '',
     ]),
     ...socials.flatMap((s) => [s.label, s.handle]),
     content.email ?? '',

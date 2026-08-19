@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { ProjectThumb, useThumbnail } from '@/objects/ProjectThumb';
@@ -9,7 +9,7 @@ import { Hotspot } from '@/objects/Hotspot';
 import { TerminalText } from '@/text/TerminalText';
 import { PALETTE } from '@/text/palette';
 import { WALL, projectX } from '@/camera/projectsPath.mjs';
-import { projects, assetUrl } from '@/content/loadContent';
+import { projects, assetUrl, hostOf } from '@/content/loadContent';
 import { setScrollLock } from '@/scroll/ScrollProvider';
 import { getUi, setUi, useUi } from '@/state/store';
 import { damp } from '@/utils/damp';
@@ -68,15 +68,29 @@ const REF_HALF_H = Math.tan((REF_FOV * Math.PI) / 360) * DIST;
  */
 /** The largest box a thumbnail may occupy. The picture is fitted INSIDE it. */
 const THUMB = { x: -5.9, y: 0.5, w: 6.4, h: 4.4 };
-const COPY = { x: -2.1, width: 11.6, title: 3.3, meta: 2.35, tech: 1.8, desc: 1.05, link: -4.4 };
+const COPY = { x: -2.1, width: 11.6, title: 3.3, meta: 2.35, tech: 1.8, desc: 1.05, bottom: -4.9 };
+
 /**
- * How much room the description gets before it would run into the link button.
+ * The link rides BESIDE the title rather than in a row of its own at the foot
+ * of the copy, so the destination is read as part of the project's name.
+ *
+ * Its x is measured from the title at sync time, not authored — see
+ * `placeLink`. LINK_MAX is how much room the assembly needs (icon, gap, and a
+ * host of realistic length); the placement is clamped by it so a long title
+ * pushes the link no further than the copy column's own right edge.
+ */
+const LINK_GAP = 0.55;
+const LINK_MAX = 4.8;
+
+/**
+ * How much room the description gets before it runs out of overlay.
  *
  * Measured, not guessed: the longest `details` in the data ran ten lines at
- * 4.34 units, which is why the link sits as low as it does and why the type is
- * 0.25 rather than the 0.28 the skills overlay uses for its blurb.
+ * 4.34 units, which is why the type is 0.25 rather than the 0.28 the skills
+ * overlay uses for its blurb. It fits well inside the room the link's old
+ * bottom row gave back.
  */
-const DESC_HEIGHT = COPY.desc - (COPY.link + 0.75);
+const DESC_HEIGHT = COPY.desc - COPY.bottom;
 
 /**
  * The description's clip box, in the TEXT'S OWN space.
@@ -105,11 +119,6 @@ const SCRIM = { w: 44, h: 30 };
 const FWD = new THREE.Vector3();
 const PARK = new THREE.Vector3();
 const DOCK = new THREE.Vector3();
-
-/** Strips the scheme so a URL reads as a destination rather than a string. */
-function hostOf(url: string): string {
-  return url.replace(/^https?:\/\//, '').replace(/\/$/, '');
-}
 
 /* -------------------------------- thumbnail ------------------------------- */
 
@@ -158,6 +167,9 @@ export function ProjectDossier() {
   const anim = useRef(0);
   /** Read by <Scrim /> at draw time, so fading it costs no re-render. */
   const glassAlpha = useRef(0);
+  /** The link's row, parked beside the title once the title has measured itself. */
+  const linkRow = useRef<THREE.Group>(null);
+  const linkPos = useRef<[number, number]>([COPY.x, COPY.title]);
 
   /**
    * Held after closing so the overlay plays its exit with the right copy still
@@ -194,9 +206,34 @@ export function ProjectDossier() {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
+  /**
+   * Docks the link beside the title, from the title's OWN measured width.
+   *
+   * troika lays text out asynchronously, so the width is not knowable at render
+   * time — this runs on its sync callback, which fires once per title change
+   * rather than per frame. `visibleBounds` is used over `blockBounds` because it
+   * is tight to the painted glyphs: blockBounds carries the trailing
+   * letterSpacing, which at 0.1em on a 0.62 title is a visible extra gap.
+   *
+   * Both are in the text mesh's own space, and the title's anchors are
+   * left/top, so x is simply its right edge and y the optical centre of the
+   * caps — which is what the link's own `middle` anchor lines up against.
+   */
+  const placeLink = useCallback((t: { textRenderInfo?: { visibleBounds?: number[] } }) => {
+    const vb = t?.textRenderInfo?.visibleBounds;
+    if (!vb) return;
+    const [, minY, maxX, maxY] = vb;
+    linkPos.current[0] = Math.min(COPY.x + maxX + LINK_GAP, COPY.x + COPY.width - LINK_MAX);
+    linkPos.current[1] = COPY.title + (minY + maxY) / 2;
+  }, []);
+
   useFrame((_, delta) => {
     const g = group.current;
     if (!g) return;
+
+    // Applied here rather than in placeLink: the group's ref is not guaranteed
+    // to be attached when troika syncs, and this costs one vector write.
+    linkRow.current?.position.set(linkPos.current[0], linkPos.current[1], 0);
 
     // Leaves a shade slower than it arrives, so the exit reads as deliberate.
     anim.current = damp(anim.current, openId ? 1 : 0, openId ? 8 : 6, delta);
@@ -259,12 +296,16 @@ export function ProjectDossier() {
     return { w, h: w / aspect };
   }, [thumb]);
 
+  /**
+   * Local to <group ref={linkRow} />, not to the overlay — the row is what
+   * moves, so the assembly inside it is authored from its own origin.
+   */
   const linkItems = useMemo<StackItem[]>(
     () => [{
       id: 'project-link',
       markId: 'ui-external',
       color: linkLive ? tint.color : PALETTE.textDim,
-      position: [COPY.x + LINK_ICON / 2, COPY.link, 0.06],
+      position: [LINK_ICON / 2, 0, 0.06],
       size: LINK_ICON,
       layers: 4,
       spread: 0.36,
@@ -324,12 +365,39 @@ export function ProjectDossier() {
             anchorX="left"
             anchorY="top"
             fontSize={S.title}
-            maxWidth={COPY.width}
+            maxWidth={COPY.width - LINK_MAX}
             color={tint.glow}
             letterSpacing={0.1}
+            onSync={placeLink}
           >
             {project.title.toUpperCase()}
           </TerminalText>
+
+          {/* ------------------- the link, beside the title ------------------ */}
+          {/* Same plate stack the socials use, carrying the icon library's
+              external-link glyph — see src/objects/iconMarks.ts. */}
+          <group ref={linkRow}>
+            <MarkStack items={linkItems} hoveredId={linkHot ? 'project-link' : null} />
+            <TerminalText
+              position={[LINK_ICON + 0.4, 0, 0.06]}
+              material-depthTest={false}
+              anchorX="left"
+              fontSize={S.link}
+              color={linkLive ? (linkHot ? tint.glow : tint.color) : PALETTE.textDim}
+              fillOpacity={linkLive ? 1 : 0.7}
+              letterSpacing={0.06}
+            >
+              {linkLive ? `${hostOf(project.url!)}  ↗` : 'LINK NOT PUBLISHED'}
+            </TerminalText>
+            {linkLive && (
+              <Hotspot
+                id="project-link"
+                position={[LINK_MAX / 2, 0, 0.2]}
+                size={[LINK_MAX, 0.9, 0.4]}
+                onActivate={() => window.open(project.url!, '_blank', 'noopener')}
+              />
+            )}
+          </group>
 
           <TerminalText
             position={[COPY.x, COPY.meta, 0.06]}
@@ -368,30 +436,6 @@ export function ProjectDossier() {
           >
             {project.details || project.summary}
           </TerminalText>
-
-          {/* --------------------- the link, as a button -------------------- */}
-          {/* Same plate stack the socials use, carrying the icon library's
-              external-link glyph — see src/objects/iconMarks.ts. */}
-          <MarkStack items={linkItems} hoveredId={linkHot ? 'project-link' : null} />
-          <TerminalText
-            position={[COPY.x + LINK_ICON + 0.4, COPY.link, 0.06]}
-            material-depthTest={false}
-            anchorX="left"
-            fontSize={S.link}
-            color={linkLive ? (linkHot ? tint.glow : tint.color) : PALETTE.textDim}
-            fillOpacity={linkLive ? 1 : 0.7}
-            letterSpacing={0.06}
-          >
-            {linkLive ? `${hostOf(project.url!)}  ↗` : 'LINK NOT PUBLISHED'}
-          </TerminalText>
-          {linkLive && (
-            <Hotspot
-              id="project-link"
-              position={[COPY.x + 2.4, COPY.link, 0.2]}
-              size={[5.4, 1.0, 0.4]}
-              onActivate={() => window.open(project.url!, '_blank', 'noopener')}
-            />
-          )}
 
           {/* --------------------------- dismiss --------------------------- */}
           <TerminalText

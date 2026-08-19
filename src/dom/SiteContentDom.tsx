@@ -7,16 +7,14 @@ import {
  * The entire site as real semantic HTML, rendered from the same site.json the
  * 3D world reads.
  *
- * This is the highest-leverage component in the project. It is simultaneously
- * the screen-reader experience, the no-WebGL fallback, the reduced-motion
- * escape hatch, the crawler-visible content, and Text Mode. Building it in
- * Phase 2 rather than last means every later 3D failure degrades to something
- * shippable instead of to a black screen.
+ * This is the screen-reader experience and the crawler-visible content while
+ * the 3D world is on screen: unstyled, off-screen, and never seen. Text Mode is
+ * a separate component (src/dom/TextMode.tsx) — it renders the same content as
+ * a real page, with images, marks and layout this mirror has no use for.
  */
-export function SiteContentDom({ variant }: { variant: 'sr' | 'visible' }) {
-  const cls = variant === 'sr' ? 'sr-only' : 'textmode';
+export function SiteContentDom() {
   return (
-    <main className={cls} id="content">
+    <main className="sr-only" id="content">
       <header>
         <h1>
           {profile.brand}: {profile.tagline}

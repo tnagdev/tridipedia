@@ -47,46 +47,7 @@
 .mode-toggle:hover { color: #b6ffd0; border-color: rgba(0, 217, 63, 0.75); }
 .mode-toggle:focus-visible { outline: 2px solid #7dffa8; outline-offset: 2px; }
 
-/* ---------- text mode ---------- */
-body.is-textmode { overflow: auto; }
-
-.textmode-root {
-  position: relative;
-  z-index: 50;
-  min-height: 100%;
-  background: #000804;
-  color: #00d93f;
-  padding: 28px 20px 80px;
-  font: 14px/1.65 ui-monospace, "Cascadia Mono", "Courier New", monospace;
-}
-.textmode-brand {
-  margin: 0 0 22px;
-  color: #7dffa8;
-  letter-spacing: 0.2em;
-  font-size: 13px;
-}
-.textmode { max-width: 74ch; margin: 0 auto; }
-.textmode h1 { font-size: 17px; letter-spacing: 0.12em; color: #b6ffd0; }
-.textmode h2 {
-  font-size: 13px;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: #7dffa8;
-  margin: 34px 0 10px;
-  border-bottom: 1px solid rgba(0, 217, 63, 0.22);
-  padding-bottom: 6px;
-}
-.textmode h3 { font-size: 13px; color: #d8ffe4; margin: 18px 0 4px; }
-.textmode h3 small { color: #4fbf72; font-weight: 400; margin-left: 8px; }
-.textmode p { margin: 0 0 10px; color: #55d97c; }
-.textmode em { color: #4fbf72; font-style: normal; opacity: .85; }
-.textmode ul { margin: 0 0 12px; padding-left: 20px; }
-.textmode li { margin: 3px 0; color: #55d97c; }
-.textmode li::marker { color: #0a7a2c; }
-.textmode strong { color: #b6ffd0; font-weight: 400; }
-.textmode a { color: #7dffa8; text-underline-offset: 3px; }
-.textmode a:hover { color: #fff; }
-.textmode-foot { max-width: 74ch; margin: 40px auto 0; color: #0a7a2c; }
+/* Text Mode has its own stylesheet: src/styles/textmode.css */
 
 /* ---------- keyboard-reachable hotspot mirror ---------- */
 .a11y-layer {

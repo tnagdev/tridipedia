@@ -43,6 +43,16 @@ export function App() {
     return () => { alive = false; };
   }, []);
 
+  /**
+   * Text Mode never mounts <Stage />, so onReady never fires and the loader —
+   * a fixed, opaque, z-index 9999 overlay — sat over the page until the 8s
+   * watchdog, hiding the "3D MODE" button along with everything else. Anyone
+   * whose stored preference is Text Mode hit this on every reload.
+   */
+  useEffect(() => {
+    if (textMode || webglFailed) finishLoader();
+  }, [textMode, webglFailed]);
+
   const onReady = useCallback(() => {
     setUi({ ready: true });
     finishLoader();
@@ -80,7 +90,7 @@ export function App() {
         <>
           {/* Always in the DOM: this is the screen-reader experience and the
               crawler-visible content, present while JS is running. */}
-          <SiteContentDom variant="sr" />
+          <SiteContentDom />
           <A11yLayer />
           <SrNav />
           <ScrollProgressBar />

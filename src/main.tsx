@@ -16,6 +16,7 @@ import { createRoot } from 'react-dom/client';
 import { App } from './App';
 import './styles/base.css';
 import './styles/dom.css';
+import './styles/textmode.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

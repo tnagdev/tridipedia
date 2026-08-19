@@ -9,7 +9,7 @@ import { Effects } from './Effects';
 import { QualityMonitor } from '@/perf/QualityProvider';
 import { TIER_SPECS, demote, promote, tierOverride, type TierName } from '@/perf/tier';
 import { PALETTE } from '@/text/palette';
-import { setUi } from '@/state/store';
+import { getUi, setUi } from '@/state/store';
 import { WarmUp } from './WarmUp';
 import { PerfHud, PERF_ENABLED } from '@/dev/PerfHud';
 import { Nav3D } from './Nav3D';
@@ -81,6 +81,21 @@ export function Stage({
         gl.domElement.addEventListener(
           'webglcontextlost',
           (e) => {
+            /**
+             * OUR OWN TEARDOWN FIRES THIS TOO.
+             *
+             * Switching to Text Mode unmounts the Canvas, and R3F disposes a
+             * renderer by calling forceContextLoss() — which dispatches a real
+             * webglcontextlost on a perfectly healthy context. Treating that as
+             * a hardware failure latched webglFailed on, and since the toggle
+             * hides itself when 3D cannot run, the "3D MODE" button vanished
+             * and the reader was stranded in Text Mode with no way back.
+             *
+             * Text Mode being on already is what tells the two apart: it is the
+             * cause of a deliberate teardown, and cannot be the case for a
+             * driver loss while the journey is on screen.
+             */
+            if (getUi().textMode) return;
             e.preventDefault();
             // Fall back to Text Mode rather than showing a black screen.
             setUi({ webglFailed: true, textMode: true });

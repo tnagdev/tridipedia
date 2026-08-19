@@ -5,6 +5,9 @@ import { HoloPanel } from '@/objects/HoloPanel';
 import { TerminalText, type TroikaText } from '@/text/TerminalText';
 import { PALETTE } from '@/text/palette';
 import { panelBox } from '@/objects/panelLayout';
+import { useUi } from '@/state/store';
+import { usePortrait } from '@/state/viewport';
+import { navReserve, NAV_Z, REF_FOV as NAV_REF_FOV } from '@/scene/navMetrics';
 import { F } from '@/state/frameState';
 import { clamp01 } from '@/scroll/easing';
 import type { Job } from '@/content/content.types';
@@ -43,8 +46,19 @@ import { jobRangeLabel } from '@/content/loadContent';
  */
 const CARD_W = 17.4;
 const CARD_H = 9.4;
+/**
+ * And upright, for a phone. A landscape card is 8.7 units of half-width against
+ * a portrait frustum's 4.8 — it overflows by two thirds — while the same frame
+ * has more than twice the height it needs. So the card turns over: narrow and
+ * tall, with the date on its own line under the company because the column it
+ * used to sit in no longer exists.
+ */
+const CARD_W_P = 8.8;
+const CARD_H_P = 14.0;
 /** Stand-off from the camera when docked. Chosen so the card fills ~62% of frame height at fov 68. */
 const DOCK_DIST = 15.5;
+/** Frustum half-height at the NAV's plane — navReserve answers in fractions. */
+const navHalfH = Math.tan((NAV_REF_FOV * Math.PI) / 360) * Math.abs(NAV_Z);
 
 const FWD = new THREE.Vector3();
 const RIGHT = new THREE.Vector3();
@@ -80,29 +94,80 @@ export function cardDockAt(local: number): number {
  * margin on all four sides that does not change when the card is resized.
  */
 const CARD_INSET = 0.55;
-const BOX = panelBox({
-  width: CARD_W - CARD_INSET * 2,
-  height: CARD_H - CARD_INSET * 2,
-  header: 0,
-});
 
-/**
- * Company at 0.62, not larger: "Aponiar Solutions Pvt. Ltd." is 27 characters,
- * and anything bigger wraps to a second line. Every row here is anchored from
- * its TOP, so a wrap would grow the block UPWARD out of the card and put the
- * overflow through the panel's own top edge — which is exactly what it did.
- */
-const S = { company: 0.62, date: 0.42, role: 0.44, story: 0.44 };
-/** Company and date share the top line; role under it; the story fills the rest. */
-const ROW = {
-  head: BOX.top,
-  /** Dropped by half the size difference, so the smaller date optically centres on the company. */
-  date: BOX.top - (S.company - S.date) * 0.5,
-  role: BOX.top - S.company - 0.30,
-  story: BOX.top - S.company - 0.30 - S.role - 0.50,
-};
-/** Leaves the date its own column on the right so the two can never collide. */
-const COMPANY_MAX = BOX.width - 5.2;
+function buildCard(portrait: boolean) {
+  const W = portrait ? CARD_W_P : CARD_W;
+  const H = portrait ? CARD_H_P : CARD_H;
+  const BOX = panelBox({
+    width: W - CARD_INSET * 2,
+    height: H - CARD_INSET * 2,
+    header: 0,
+  });
+
+  if (!portrait) {
+    /**
+     * Company at 0.62, not larger: "Aponiar Solutions Pvt. Ltd." is 27
+     * characters, and anything bigger wraps to a second line. Every row here is
+     * anchored from its TOP, so a wrap would grow the block UPWARD out of the
+     * card and put the overflow through the panel's own top edge — which is
+     * exactly what it did.
+     */
+    const S = { company: 0.62, date: 0.42, role: 0.44, story: 0.44 };
+    return {
+      W, H, BOX, S,
+      /** Company and date share the top line; role under it; the story fills the rest. */
+      ROW: {
+        head: BOX.top,
+        /** Dropped by half the size difference, so the date optically centres on the company. */
+        date: BOX.top - (S.company - S.date) * 0.5,
+        role: BOX.top - S.company - 0.30,
+        story: BOX.top - S.company - 0.30 - S.role - 0.50,
+      },
+      /** Leaves the date its own column on the right so the two can never collide. */
+      companyMax: BOX.width - 5.2,
+      /** The date shares the head row, hard right. */
+      dateOwnRow: false,
+      /**
+       * Unset in landscape, exactly as it was: "role · location" runs to 13.5
+       * against a 15.4-wide column, so it has never needed to wrap and giving
+       * troika a width it never reaches would change nothing but the risk.
+       */
+      roleMax: undefined as number | undefined,
+      /** How low the docked card sits. See the dock pose below. */
+      dropUnits: 1.1,
+    };
+  }
+
+  // Company at 0.40: the longest is 25 characters and the column is 6.85
+  // wide, so anything larger wraps and the block grows UP out of the card.
+  const S = { company: 0.40, date: 0.32, role: 0.36, story: 0.33 };
+  const date = BOX.top - S.company - 0.18;
+  const role = date - S.date - 0.26;
+  return {
+    W, H, BOX, S,
+    ROW: {
+      head: BOX.top,
+      date,
+      role,
+      // Two lines of slack: "role · location" runs to 48 characters, which is
+      // wider than this column, and the row below has to start under the wrap.
+      story: role - S.role * 2 - 0.40,
+    },
+    // No date column to dodge any more — it is on its own line.
+    companyMax: BOX.width,
+    dateOwnRow: true,
+    /*
+     * REQUIRED here. The same 48-character line is 11 units wide against a
+     * 6.9-wide column, and without a width troika does not wrap — it just runs
+     * out past the card's edge. The story row below is already positioned two
+     * lines down to receive the wrap.
+     */
+    roleMax: BOX.width as number | undefined,
+    dropUnits: null as number | null,
+  };
+}
+
+const CARD = { landscape: buildCard(false), portrait: buildCard(true) };
 
 export interface JobCardProps {
   job: Job;
@@ -119,6 +184,12 @@ export interface JobCardProps {
 
 export function JobCard({ job, side, parkX, parkY, parkZ, range, index }: JobCardProps) {
   const camera = useThree((s) => s.camera);
+  const size = useThree((s) => s.size);
+  const portrait = usePortrait();
+  const safeTop = useUi((s) => s.safeTop);
+  const { W: CARD_W_A, H: CARD_H_A, BOX, S, ROW, companyMax, dateOwnRow, dropUnits } =
+    portrait ? CARD.portrait : CARD.landscape;
+  const roleMax = (portrait ? CARD.portrait : CARD.landscape).roleMax;
   const group = useRef<THREE.Group>(null);
   const storyRef = useRef<TroikaText>(null);
 
@@ -154,10 +225,27 @@ export function JobCard({ job, side, parkX, parkY, parkZ, range, index }: JobCar
     camera.getWorldDirection(FWD);
     RIGHT.crossVectors(FWD, camera.up).normalize();
     UP.crossVectors(RIGHT, FWD).normalize();
+    /**
+     * Sits low enough that it never reaches the navigation.
+     *
+     * The 1.1 was authored when the nav was a bar across the top and stayed
+     * after it moved to the left edge, where it does nothing — so landscape
+     * keeps it exactly, as the harmless constant it now is. In portrait the nav
+     * IS a bar across the top again, and the drop is derived from its real
+     * depth rather than guessed at.
+     */
+    const camP = camera as THREE.PerspectiveCamera;
+    const hH = Math.tan(THREE.MathUtils.degToRad(camP.fov) * 0.5) * DOCK_DIST;
+    const drop = dropUnits ?? navReserve({
+      portrait: true,
+      sizeW: size.width,
+      halfW: navHalfH * camP.aspect,
+      halfH: navHalfH,
+      safeTopWorld: (safeTop * 2 * navHalfH) / Math.max(1, size.height),
+    }).top * hH;
     DOCK.copy(camera.position)
       .addScaledVector(FWD, DOCK_DIST)
-      // sits a touch low so it never reaches the nav bar at the top of frame
-      .addScaledVector(UP, -1.1);
+      .addScaledVector(UP, -drop);
 
     g.position.lerpVectors(PARK, DOCK, dock);
     TMP_Q.copy(camera.quaternion);
@@ -182,8 +270,8 @@ export function JobCard({ job, side, parkX, parkY, parkZ, range, index }: JobCar
   return (
     <group ref={group}>
       <HoloPanel
-        width={CARD_W}
-        height={CARD_H}
+        width={CARD_W_A}
+        height={CARD_H_A}
         radius={0.5}
         header={0}
         footer={0}
@@ -202,13 +290,13 @@ export function JobCard({ job, side, parkX, parkY, parkZ, range, index }: JobCar
         anchorY="top"
         fontSize={S.company}
         color={PALETTE.textBright}
-        maxWidth={COMPANY_MAX}
+        maxWidth={companyMax}
       >
         {job.company}
       </TerminalText>
       <TerminalText
-        position={[BOX.right, ROW.date, 0.06]}
-        anchorX="right"
+        position={[dateOwnRow ? BOX.left : BOX.right, ROW.date, 0.06]}
+        anchorX={dateOwnRow ? 'left' : 'right'}
         anchorY="top"
         fontSize={S.date}
         color={PALETTE.textDim}
@@ -222,6 +310,7 @@ export function JobCard({ job, side, parkX, parkY, parkZ, range, index }: JobCar
         anchorX="left"
         anchorY="top"
         fontSize={S.role}
+        maxWidth={roleMax}
         color={PALETTE.accent}
       >
         {`${job.role}  ·  ${job.location}`}

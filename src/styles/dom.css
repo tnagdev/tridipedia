@@ -149,3 +149,41 @@
   font: 11px/1.45 ui-monospace, "Cascadia Mono", monospace;
   pointer-events: none;
 }
+
+/* ==========================================================================
+   Portrait
+   --------------------------------------------------------------------------
+   In portrait the 3D navigation is a bar across the TOP of the frame, drawn in
+   WebGL and spanning almost the full width. Every piece of fixed DOM chrome
+   that used to live in the top-right corner has to get out of its way.
+   ========================================================================== */
+@media (orientation: portrait) {
+  /*
+   * Bottom-right, not top-right: the nav bar owns the top edge now. This also
+   * releases the 148px reservation Text Mode's topbar was cutting for it.
+   */
+  .mode-toggle {
+    top: auto;
+    bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+    right: calc(14px + env(safe-area-inset-right, 0px));
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  /* Full width above the toggle: 46ch does not fit beside it on a phone. */
+  .reduced-chip {
+    left: calc(14px + env(safe-area-inset-left, 0px));
+    right: calc(14px + env(safe-area-inset-right, 0px));
+    bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+    max-width: none;
+  }
+
+  /* Focus-only overlays: below the bar, or they land on top of it. */
+  .a11y-layer a:focus-visible,
+  .a11y-layer button:focus-visible { top: 140px; }
+  .sr-nav button:focus-visible { top: 140px; }
+  .skip-link:focus { top: calc(8px + env(safe-area-inset-top, 0px)); }
+
+  .perf-hud { bottom: calc(64px + env(safe-area-inset-bottom, 0px)); }
+}

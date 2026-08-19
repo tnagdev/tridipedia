@@ -10,10 +10,21 @@ import { PALETTE } from '@/text/palette';
 import { JobCard, cardDockAt } from './JobCard';
 import { F } from '@/state/frameState';
 import { clamp01 } from '@/scroll/easing';
+import { usePortrait } from '@/state/viewport';
 
 const CANYON_START = -150;
 const CANYON_LEN = 110;
 const WALL_X = 11;
+/**
+ * And the portrait one.
+ *
+ * The monoliths are peripheral parallax — you fly BETWEEN them, you do not read
+ * them — so on a phone they are not broken, just gone: at 11 units out they sit
+ * well outside a frustum that is 5 units of half-width, and the canyon reads as
+ * empty space with cards floating in it. Bringing them in restores the walls to
+ * the corner of the eye, which is the whole of their job.
+ */
+const WALL_X_P = 7.5;
 /** Height of the wall slabs, and therefore of the cards parked flush on them. */
 const WALL_Y = 0.5;
 
@@ -24,7 +35,8 @@ const SPAN = SEC_END - SEC_START;
  * Monolith geometry is COMPUTED from the real ISO dates — change a date in
  * site.json and the world physically changes shape.
  */
-export const JOB_LAYOUT = (() => {
+function buildJobLayout(portrait: boolean) {
+  const wallX = portrait ? WALL_X_P : WALL_X;
   const t0 = new Date(experience[0]?.start ?? '2018-01-01').getTime();
   const t1 = Date.now();
   const span = Math.max(1, t1 - t0);
@@ -42,12 +54,18 @@ export const JOB_LAYOUT = (() => {
       side,
       length,
       index: i,
-      center: [side * WALL_X, WALL_Y, (z0 + z1) / 2] as [number, number, number],
+      center: [side * wallX, WALL_Y, (z0 + z1) / 2] as [number, number, number],
       current: j.end === null,
       range: [SEC_START + i * slice, SEC_START + (i + 1) * slice] as [number, number],
+      wallX,
     };
   });
-})();
+}
+
+const CANYON = { landscape: buildJobLayout(false), portrait: buildJobLayout(true) };
+/** The landscape canyon, for anything that only needs the count or the ranges. */
+export const JOB_LAYOUT = CANYON.landscape;
+export const jobCanyon = (portrait: boolean) => (portrait ? CANYON.portrait : CANYON.landscape);
 
 /**
  * 04 — "The Timeline Canyon".
@@ -58,6 +76,8 @@ export const JOB_LAYOUT = (() => {
  * parallax.
  */
 export function ExperienceSection() {
+  const portrait = usePortrait();
+  const canyon = jobCanyon(portrait);
   const p = useSectionProgress('experience');
   const group = useRef<THREE.Group>(null);
 
@@ -121,7 +141,7 @@ export function ExperienceSection() {
 
       {/* World-anchored wall slabs. These do NOT dock — they are the far
           parallax layer the docked cards move against. */}
-      {JOB_LAYOUT.map((m) => (
+      {canyon.map((m) => (
         <JobMonolith
           key={m.job.id}
           length={m.length}
@@ -134,12 +154,12 @@ export function ExperienceSection() {
       ))}
 
       {/* Flight cards: lie flush on the wall, dock dead-centre, depart. */}
-      {JOB_LAYOUT.map((m) => (
+      {canyon.map((m) => (
         <JobCard
           key={`card-${m.job.id}`}
           job={m.job}
           side={m.side}
-          parkX={m.side * (WALL_X - 0.6)}
+          parkX={m.side * (m.wallX - 0.6)}
           parkY={m.center[1]}
           parkZ={m.center[2]}
           range={m.range}

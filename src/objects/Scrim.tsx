@@ -45,6 +45,25 @@ const fragmentShader = /* glsl */ `
     return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
   }
 
+  /**
+   * Smoothly interpolated value noise.
+   *
+   * The grain below is hashed per CELL, which gives hard-edged speckle — right
+   * for glass dust, wrong for the soft unfocused blobs that read as a blur.
+   * Interpolating between the four corners of each cell costs three extra mixes
+   * and is what turns speckle into haze.
+   */
+  float vnoise(vec2 p) {
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+    f = f * f * (3.0 - 2.0 * f);
+    float a = hash(i);
+    float b = hash(i + vec2(1.0, 0.0));
+    float c = hash(i + vec2(0.0, 1.0));
+    float d = hash(i + vec2(1.0, 1.0));
+    return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+  }
+
   void main() {
     if (uOpacity < 0.002) discard;
 
@@ -53,7 +72,10 @@ const fragmentShader = /* glsl */ `
     vec2 q = (vUv - 0.5) * 2.0;
     q.x *= uAspect;
     float r = length(q) / max(uAspect, 1.0);
-    float fall = mix(1.0, 0.52, smoothstep(0.18, 1.05, r));
+    // Barely any falloff now: the overlay's copy has to win against the rain
+    // across the WHOLE frame, not just behind its middle. The edges still ease
+    // off enough that the world reads as veiled rather than switched off.
+    float fall = mix(1.0, 0.86, smoothstep(0.18, 1.05, r));
 
     // Glass grain: fixed fine static, plus a coarser layer that resamples a few
     // times a second. Both are cheap hashes of the quad's own uv.
@@ -61,8 +83,16 @@ const fragmentShader = /* glsl */ `
     float g2 = hash(floor(vUv * 210.0) + floor(uTime * 9.0));
     float grain = (g1 - 0.5) * 0.055 + (g2 - 0.5) * 0.03;
 
-    float a = clamp(uOpacity * fall + grain * uOpacity, 0.0, 1.0);
-    vec3 col = uTint * (0.085 + max(grain, 0.0) * 0.6);
+    // And the haze that does the actual blurring work: broad, soft, slowly
+    // drifting lobes of extra opacity. Where one sits, the rain behind it loses
+    // another 12% of its contrast, and because the lobes are smooth rather than
+    // per-cell the eye reads the whole field as out of focus instead of noisy.
+    float haze = vnoise(vUv * vec2(9.0, 5.0) + vec2(uTime * 0.05, uTime * 0.031));
+    haze += 0.5 * vnoise(vUv * vec2(23.0, 13.0) - vec2(uTime * 0.037, uTime * 0.021));
+    haze = (haze / 1.5 - 0.5);
+
+    float a = clamp(uOpacity * (fall + haze * 0.12) + grain * uOpacity, 0.0, 1.0);
+    vec3 col = uTint * (0.085 + max(grain, 0.0) * 0.6 + max(haze, 0.0) * 0.10);
     gl_FragColor = vec4(col, a);
   }
 `;

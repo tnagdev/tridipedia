@@ -2,11 +2,41 @@ import { useEffect } from 'react';
 import Lenis from 'lenis';
 import { journey } from '@/content/loadContent';
 import { F } from '@/state/frameState';
+import { getUi } from '@/state/store';
 
 let lenisInstance: Lenis | null = null;
 
+/**
+ * The viewport height the scroll range is measured against.
+ *
+ * On iOS Safari the URL bar collapses as you scroll and innerHeight drops by
+ * 60-90px, while the spacer's `vh` resolves against the LARGE viewport and does
+ * not move at all. So the denominator below shrinks mid-gesture, F.raw jumps,
+ * and the camera lurches forward about half a percent of the journey the first
+ * time you touch the page. Caching the height and refreshing it only when the
+ * WIDTH changes (or on a real rotation) is what stops that: a URL bar collapse
+ * moves the height and nothing else.
+ *
+ * Landscape and desktop read the live value exactly as they always did — this
+ * costs nothing there, and a desktop window resize changes both dimensions.
+ */
+let cachedH = typeof window !== 'undefined' ? window.innerHeight : 0;
+let cachedW = typeof window !== 'undefined' ? window.innerWidth : 0;
+
+function refreshViewport() {
+  if (typeof window === 'undefined') return;
+  if (window.innerWidth !== cachedW) {
+    cachedW = window.innerWidth;
+    cachedH = window.innerHeight;
+  }
+}
+
+function viewportH(): number {
+  return getUi().portrait ? cachedH : window.innerHeight;
+}
+
 function scrollLimit(): number {
-  return Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+  return Math.max(0, document.documentElement.scrollHeight - viewportH());
 }
 
 /**
@@ -20,6 +50,7 @@ function scrollLimit(): number {
  * only thing that reports where we are.
  */
 function readScroll() {
+  refreshViewport();
   const limit = scrollLimit();
   F.raw = limit > 0 ? Math.min(1, Math.max(0, window.scrollY / limit)) : 0;
 }
@@ -139,7 +170,22 @@ export function ScrollProvider({ children, enabled = true }: { children?: React.
 
   return (
     <>
-      <div aria-hidden="true" style={{ height: `${journey.scrollHeightVh}vh`, pointerEvents: 'none' }} />
+      {/*
+        Two heights, second wins where it is understood: `lvh` is the LARGE
+        viewport height, which is what `vh` already means on iOS but is
+        explicit — and on browsers that size `vh` to the small viewport it
+        stops the whole scroll range from changing under the reader.
+      */}
+      <div
+        aria-hidden="true"
+        style={{
+          height: `${journey.scrollHeightVh}vh`,
+          // The same property as `height` in horizontal writing mode, declared
+          // second so it wins where `lvh` parses and is dropped where it does not.
+          blockSize: `${journey.scrollHeightVh}lvh`,
+          pointerEvents: 'none',
+        }}
+      />
       {children}
     </>
   );

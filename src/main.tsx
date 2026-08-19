@@ -14,9 +14,16 @@ if (import.meta.env.DEV && new URLSearchParams(location.search).has('forceraf'))
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
+import { installViewportWatch } from './state/viewport';
 import './styles/base.css';
 import './styles/dom.css';
 import './styles/textmode.css';
+
+/*
+ * Before the first render, and outside App: Text Mode needs the orientation as
+ * much as the canvas does, and Stage is lazy so it cannot be the owner.
+ */
+installViewportWatch();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

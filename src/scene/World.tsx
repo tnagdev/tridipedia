@@ -3,7 +3,8 @@ import { DigitalRain } from '@/rain/DigitalRain';
 import { RainDriver } from '@/rain/RainDriver';
 import { J } from '@/camera/journey';
 import { useSectionActive } from '@/scroll/useSectionActive';
-import { SKILL_LAYOUT } from './sections/SkillsSection';
+import { skillLattice } from './sections/SkillsSection';
+import { usePortrait } from '@/state/viewport';
 import { HeroSection } from './sections/HeroSection';
 import { AboutSection } from './sections/AboutSection';
 import { SkillsSection } from './sections/SkillsSection';
@@ -18,19 +19,23 @@ import type { TierSpec } from '@/perf/tier';
  * <Text> count trivially inside budget.
  */
 export function World({ tier, forceAll = false }: { tier: TierSpec; forceAll?: boolean }) {
+  const portrait = usePortrait();
   // Tag rain columns near each skill chip so the per-skill glyph lock and
   // colour tint still land now the chips follow the camera spline instead of a
   // fixed tower grid. The radius is generous because the helix spaces chips
   // further apart than the old two-row layout did.
+  // Portrait moves the lattice, so the zones have to move with it or the rain
+  // is tinted around empty air. Rebuilding the attribute buffers is expensive,
+  // but this fires once per physical rotation.
   const skillZones = useMemo<SkillZone[]>(
     () =>
-      SKILL_LAYOUT.map((l, i) => ({
+      skillLattice(portrait).map((l, i) => ({
         index: i,
         position: l.position,
         radius: 7.5,
         name: l.skill.name,
       })),
-    [],
+    [portrait],
   );
 
   const hero = useSectionActive('hero') || forceAll;

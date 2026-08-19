@@ -31,14 +31,29 @@ export function Hotspot({
       ref={ref}
       position={position}
       visible={false}
+      /*
+       * TOUCH.
+       *
+       * R3F synthesises pointerover from a tap but there is no pointerout to
+       * match it, so on a phone every tap used to latch `hovered` on whatever
+       * was last touched — a MarkStack plate left peeled open for the rest of
+       * the session — and leave the document cursor set to 'pointer' with no
+       * pointer to show it. Clearing on pointerup is the missing half.
+       *
+       * The mouse path below is untouched: pointerType is 'mouse' there and
+       * every branch falls through to what it always did.
+       */
       onPointerOver={(e) => {
         e.stopPropagation();
         setUi({ hovered: id });
-        document.body.style.cursor = 'pointer';
+        if (e.pointerType !== 'touch') document.body.style.cursor = 'pointer';
       }}
       onPointerOut={() => {
         setUi({ hovered: null });
         document.body.style.cursor = 'auto';
+      }}
+      onPointerUp={(e) => {
+        if (e.pointerType === 'touch') setUi({ hovered: null });
       }}
       onClick={(e) => {
         e.stopPropagation();

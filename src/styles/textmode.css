@@ -174,14 +174,31 @@ body.is-textmode { overflow: auto; }
 
 /* ---------- about ---------- */
 .tm-about { display: flex; flex-wrap: wrap; gap: 26px; align-items: flex-start; }
-.tm-avatar { margin: 0; flex: 0 0 168px; }
-.tm-avatar img {
-  display: block;
-  width: 168px;
-  height: 168px;
-  object-fit: cover;
+.tm-avatar { margin: 0; flex: 0 0 var(--tm-portrait-w); --tm-portrait-w: 260px; }
+/*
+ * The block-character portrait, at whatever type size makes it exactly
+ * --tm-portrait-w across.
+ *
+ * --tm-ascii-adv is the art's width in ems, set on the element from its real
+ * column count, so the division below is the only sizing rule and the picture
+ * cannot come out stretched. line-height 1 is load-bearing: the art was drawn
+ * on square-ish cells, and any leading at all opens gaps between the rows and
+ * shreds it into stripes.
+ */
+.tm-ascii {
+  margin: 0;
+  width: var(--tm-portrait-w);
+  font-size: calc(var(--tm-portrait-w) / var(--tm-ascii-adv));
+  line-height: 1;
+  white-space: pre;
+  overflow: hidden;
+  color: var(--tm-green);
   border: 1px solid var(--tm-line-strong);
-  filter: grayscale(1) sepia(1) hue-rotate(75deg) saturate(2.2) contrast(1.05);
+  /* The art reads as one shape; letting a glyph blur into its neighbour is
+     what makes it read as tone rather than as characters. */
+  padding: 6px 0;
+  text-align: center;
+  user-select: none;
 }
 .tm-avatar figcaption {
   margin-top: 8px;
@@ -396,5 +413,66 @@ a.tm-social:hover { border-color: var(--tm-line-strong); }
   .tm-nav a { font-size: 11px; letter-spacing: 0.1em; }
   .tm-section, .tm-hero { scroll-margin-top: 104px; }
   .tm-facts span, .tm-contact span { flex-basis: 100%; }
-  .tm-avatar, .tm-avatar img { flex-basis: 120px; width: 120px; height: 120px; }
+  .tm-avatar { --tm-portrait-w: 200px; }
+}
+
+/* ==========================================================================
+   Portrait
+   --------------------------------------------------------------------------
+   Two tiers on purpose, and they are not the same question:
+
+   - THIS block is structural — where the toggle sits, what clears a notch, how
+     big a finger's target is. All of that is right at any portrait size.
+   - The 560px block above stays size-driven, for typography. A 1024x1366 iPad
+     in portrait should not be served phone type.
+
+   Everything below is additive. Landscape never enters this block, so the
+   desktop page is the same page it was.
+   ========================================================================== */
+@media (orientation: portrait) {
+  /*
+   * The 148px right padding upstairs is a hole cut for the fixed mode toggle.
+   * In portrait the toggle moves to the bottom-right corner (see dom.css), so
+   * the hole is not only unnecessary, it is 38% of a 390px screen thrown away.
+   */
+  .tm-topbar {
+    padding: calc(12px + env(safe-area-inset-top, 0px))
+             max(20px, env(safe-area-inset-right, 0px))
+             12px
+             max(20px, env(safe-area-inset-left, 0px));
+  }
+  /* Five section links plus the brand will not share one row honestly. */
+  .tm-topbar nav { flex: 1 0 100%; }
+  .tm-section, .tm-hero { scroll-margin-top: 104px; }
+
+  /*
+   * 44px targets, without inflating anything visually: the padding grows the
+   * hit box and the equal negative margin gives the space back to the layout.
+   */
+  .tm-nav { gap: 6px 10px; }
+  .tm-nav a { display: inline-block; padding: 13px 8px; margin: -13px 0; }
+  .tm-link { display: inline-flex; align-items: center; min-height: 44px; }
+  .tm-social { padding: 14px 12px; min-height: 56px; }
+  .tm-chip { padding: 6px 10px; }
+  .tm a, .tm button { -webkit-tap-highlight-color: rgba(0, 217, 63, 0.18); }
+
+  /* A 9em label column is a third of a phone. Stack the label over its value. */
+  .tm-facts span, .tm-contact span { flex-basis: 100%; }
+
+  /*
+   * `margin-left: auto` on the year is a desktop idea: once the head wraps it
+   * strands the year alone on its own line, hard right, under nothing. Give the
+   * title its own line and let the year sit next to the link where it reads.
+   */
+  .tm-card-head.is-project { gap: 6px 10px; }
+  .tm-card-head.is-project h3 { flex: 1 0 100%; }
+  .tm-card-head.is-project .tm-tag { margin-left: 0; }
+
+  /* viewport-fit=cover is set in index.html but nothing honoured it until now. */
+  .tm-main, .tm-foot {
+    padding-left: max(20px, env(safe-area-inset-left, 0px));
+    padding-right: max(20px, env(safe-area-inset-right, 0px));
+  }
+  /* Clear the toggle, now parked bottom-right over the end of the page. */
+  .tm-foot { padding-bottom: calc(124px + env(safe-area-inset-bottom, 0px)); }
 }

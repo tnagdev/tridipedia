@@ -15,7 +15,9 @@ import { PerfHud, PERF_ENABLED } from '@/dev/PerfHud';
 import { Nav3D } from './Nav3D';
 
 const DEV_FORCE_SIZE = import.meta.env.DEV && typeof location !== 'undefined'
-  && new URLSearchParams(location.search).has('forceraf');
+  && (new URLSearchParams(location.search).has('forceraf')
+    || new URLSearchParams(location.search).has('forcesize')
+    || new URLSearchParams(location.search).has('portrait'));
 const DevForceSize = DEV_FORCE_SIZE
   ? (await import('@/dev/DevForceSize')).DevForceSize
   : () => null;

@@ -10,6 +10,12 @@ import { buildMarkAtlas, type MarkAtlas } from '@/objects/markAtlas';
 import { navMarkId } from '@/objects/navMarks';
 import { NineSlice } from '@/objects/NineSlice';
 import type { TroikaText } from '@/text/TerminalText';
+import { useUi } from '@/state/store';
+import { usePortrait } from '@/state/viewport';
+import {
+  NAV_Z, MARGIN, REF_HALF_H, N, PITCH, PLATE_H, PAD, QUAD_H,
+  BAR_D, BAR_LEN, ICON_P, LABEL_DROP, portraitNavFit,
+} from './navMetrics';
 
 /**
  * The navigation.
@@ -18,6 +24,23 @@ import type { TroikaText } from '@/text/TerminalText';
  * lives as the camera flies into each room. Six icons; hovering slides it open
  * to show the labels. Nothing else: no decoration that does not say where you
  * are or where you can go.
+ *
+ * IN PORTRAIT it IS a bar across the top, because the reasoning inverts: the
+ * camera's fov is vertical, so a phone frame keeps all of its height and loses
+ * its width, and the copy that the left edge was protecting now needs every
+ * pixel of that width. Height is the thing there is spare of.
+ *
+ * The bar is the SAME OBJECT turned ninety degrees — the housing's mesh carries
+ * a rotation and nothing else changes, because the shader below works in the
+ * quad's own UV space and cannot tell. There is no second shader to keep in
+ * sync. Only the icons, the label and the hit rows are laid out afresh, and
+ * they are laid out in an unrotated sibling group so nothing has to be
+ * counter-rotated.
+ *
+ * Portrait also drops hover entirely. A touch device synthesises pointerover
+ * from a tap but never pointerout, so a hover-to-open rail latches open on the
+ * last row tapped and never closes. One tap jumps; the live section prints its
+ * name under the bar.
  *
  * Drawn as HUD line-work, not lighting: one nine-sliced frame around the whole
  * column, and rows that are nothing but an icon and a label. Exactly ONE shape is
@@ -43,22 +66,12 @@ import type { TroikaText } from '@/text/TerminalText';
  * A canvas-only nav would be unusable without a mouse.
  */
 
-const NAV_Z = -1.05; // just inside the near plane
-/** Distance from the left edge of the frame, in units at the nav's plane. */
-const MARGIN = 0.034;
-
-/**
- * The fov the rail's authored size is calibrated to, and the frustum half-height
- * that follows from it. Everything below is measured against this so the rail
- * keeps one size on screen no matter what the camera's fov is doing; 66 is the
- * middle of the journey's 54..78 range, so this is the size it always had at
- * the midpoint and is now the size it has everywhere.
+/*
+ * NAV_Z, MARGIN, REF_HALF_H, N, PITCH, PLATE_H, PAD and QUAD_H now live in
+ * ./navMetrics, unchanged. They moved because the SECTIONS have to lay out
+ * around this thing, and until now they did it by guessing at its width. Same
+ * numbers, one owner.
  */
-const REF_FOV = 66;
-const REF_HALF_H = Math.tan((REF_FOV * Math.PI) / 360) * Math.abs(NAV_Z);
-
-const N = SECTIONS.length;
-const PITCH = 0.106; // row to row
 const ICON = 0.044;
 // Wide enough for the frame art: its right border alone is over half the source
 // image's width, so a narrower rail leaves the middle slice with nothing to do.
@@ -74,12 +87,10 @@ const TAB_CUT = 0.020;
 const TAB_INSET = 0.026;
 const TAB_H = 0.080;
 
-const PLATE_H = N * PITCH + 0.076;
 const ROW_Y = SECTIONS.map((_, i) => ((N - 1) / 2 - i) * PITCH);
 
-/** A hair of padding around the panel so its antialiased edge has room. */
-const PAD = 0.008;
-const QUAD_H = PLATE_H + PAD * 2;
+/** Column centres for the portrait bar: the same pitch, along the other axis. */
+const COL_X = SECTIONS.map((_, i) => (i - (N - 1) / 2) * PITCH);
 
 /**
  * The housing's shader works in QUAD-HEIGHT units — y spans -0.5..0.5 — so
@@ -326,6 +337,17 @@ const FRAME_SLICE: [number, number, number, number] = [69, 47, 38, 31];
  * is the second half of a border-image declaration doing its job.
  */
 const FRAME_BORDER: [number, number, number, number] = [0.060, 0.028, 0.034, 0.026];
+/**
+ * The same tuple rotated one place, for the bar.
+ *
+ * The rule the landscape numbers encode is "the heavy borders go on the LONG
+ * axis, the compressed ones on the short axis" — the art's right border alone is
+ * over half the source's width, and drawn at that proportion it swallows a
+ * narrow box. Turning the housing on its side swaps which axis is which, so the
+ * numbers walk round with it: left/right now carry the deep borders and
+ * top/bottom the shallow ones.
+ */
+const FRAME_BORDER_P: [number, number, number, number] = [0.026, 0.060, 0.028, 0.034];
 
 const QUAD = new Float32Array([-0.5, -0.5, 0, 0.5, -0.5, 0, 0.5, 0.5, 0, -0.5, -0.5, 0, 0.5, 0.5, 0, -0.5, 0.5, 0]);
 const QUAD_UV = new Float32Array([0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1]);
@@ -334,6 +356,8 @@ const MARK_IDS = SECTIONS.map((s) => navMarkId(s.id));
 export function Nav3D() {
   const camera = useThree((s) => s.camera);
   const size = useThree((s) => s.size);
+  const portrait = usePortrait();
+  const safeTop = useUi((s) => s.safeTop);
   const group = useRef<THREE.Group>(null);
   const plate = useRef<THREE.Mesh>(null);
   const frame = useRef<THREE.Mesh | null>(null);
@@ -342,6 +366,23 @@ export function Nav3D() {
   const hits = useRef<(THREE.Mesh | null)[]>([]);
   const [hovered, setHovered] = useState<number | null>(null);
   const [atlas, setAtlas] = useState<MarkAtlas | null>(null);
+  /**
+   * Where the finger went down, so a scroll that happens to start on the bar is
+   * not read as a tap on whatever it started over. The journey IS a vertical
+   * drag, so this is the common case, not the edge case.
+   */
+  const down = useRef<{ x: number; y: number; t: number } | null>(null);
+
+  /**
+   * Rotating to portrait mid-hover would leave `hovered` latched — the handlers
+   * that would clear it are not registered there.
+   */
+  useEffect(() => {
+    if (portrait) {
+      setHovered(null);
+      document.body.style.cursor = 'auto';
+    }
+  }, [portrait]);
 
   /** Damped 0..1: how far the panel has slid open. */
   const open = useRef(0);
@@ -365,8 +406,8 @@ export function Nav3D() {
     const offset = new Float32Array(N * 3);
     const cells = new Float32Array(N);
     SECTIONS.forEach((s, i) => {
-      offset[i * 3] = ICON_X;
-      offset[i * 3 + 1] = ROW_Y[i];
+      offset[i * 3] = portrait ? COL_X[i] : ICON_X;
+      offset[i * 3 + 1] = portrait ? 0 : ROW_Y[i];
       offset[i * 3 + 2] = 0.002;
       cells[i] = atlas.index[navMarkId(s.id)] ?? 0;
       state.current[i * 3 + 2] = i;
@@ -382,7 +423,13 @@ export function Nav3D() {
     g.instanceCount = N;
     g.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 10);
     return g;
-  }, [atlas]);
+  }, [atlas, portrait]);
+
+  /**
+   * This used to run exactly once and so leaked nothing. Now that a rotation
+   * rebuilds it, the old buffers have to go back.
+   */
+  useEffect(() => () => geometry?.dispose(), [geometry]);
 
   const plateMat = getPlateMaterial();
   const iconMat = getIconMaterial();
@@ -393,8 +440,11 @@ export function Nav3D() {
 
   useFrame((_, delta) => {
     const kd = Math.min(1, delta * 9);
-    open.current += ((hovered === null ? 0 : 1) - open.current) * kd;
-    const width = COLLAPSED_W + (EXPANDED_W - COLLAPSED_W) * open.current;
+    // Portrait never opens: there is no hover to open it with, and the bar
+    // carries a caption instead of six labels. Holding this at 0 is what keeps
+    // uHoverOn dark and the idle labels faded out.
+    open.current = portrait ? 0 : open.current + ((hovered === null ? 0 : 1) - open.current) * kd;
+    const width = portrait ? BAR_D : COLLAPSED_W + (EXPANDED_W - COLLAPSED_W) * open.current;
 
     // Pin to the left of frame whatever the fov is doing — the fov is keyframed
     // from 54 to 78 across the journey, so anything placed at a fixed x drifts
@@ -415,22 +465,51 @@ export function Nav3D() {
     // The two clamps stay: they are what stops an opened panel spanning a
     // narrow viewport, and they bite only when they are smaller than the
     // constant-size target.
-    const fit = Math.min(
-      halfH / REF_HALF_H,
-      (halfW * 0.88) / EXPANDED_W,
-      (halfH * 1.7) / PLATE_H,
-    );
+    //
+    // Portrait turns the whole argument on its side. The constraint there is
+    // the bar's LENGTH against the frame's width — the one dimension a phone is
+    // short of — and the constant-screen-size term becomes the upper bound
+    // rather than the target, because a bar that spans the width is already the
+    // right size by construction.
+    const fit = portrait
+      ? portraitNavFit(halfW, halfH)
+      : Math.min(
+        halfH / REF_HALF_H,
+        (halfW * 0.88) / EXPANDED_W,
+        (halfH * 1.7) / PLATE_H,
+      );
+    const quadW = width + PAD * 2;
     const g = group.current;
     if (g) {
-      g.position.set(-halfW + MARGIN * fit, 0, NAV_Z);
+      if (portrait) {
+        // Hung from the top edge, clear of any notch. safeTop is CSS pixels, and
+        // one frame height is size.height of them.
+        const safeTopWorld = (safeTop * 2 * halfH) / Math.max(1, size.height);
+        g.position.set(0, halfH - safeTopWorld - (MARGIN + quadW / 2) * fit, NAV_Z);
+      } else {
+        g.position.set(-halfW + MARGIN * fit, 0, NAV_Z);
+      }
       g.scale.setScalar(fit);
     }
 
     const p = plate.current;
     if (p) {
-      const quadW = width + PAD * 2;
       p.scale.set(quadW, QUAD_H, 1);
-      p.position.x = quadW / 2 - PAD;
+      /**
+       * The rotation is the entire portrait housing.
+       *
+       * Rz(-90) maps local (x, y) to world (y, -x): the row axis becomes the
+       * bar's length, and the panel's width — which grows rightward from the
+       * quad's left edge — becomes a depth growing DOWNWARD from the top. The
+       * fragment shader reads vUv, which a mesh rotation does not touch, so not
+       * one character of GLSL knows this happened.
+       *
+       * x = 0 rather than the landscape offset because the drawn panel is
+       * already concentric in its quad (pad + halfW on each side), so centring
+       * the quad centres the bar.
+       */
+      p.rotation.z = portrait ? -Math.PI / 2 : 0;
+      p.position.x = portrait ? 0 : quadW / 2 - PAD;
       plateMat.uniforms.uAspect.value = quadW / QUAD_H;
       plateMat.uniforms.uPanelW.value = width / QUAD_H;
       // Antialias against the REAL pixel size: one quad-height maps to this many
@@ -454,10 +533,20 @@ export function Nav3D() {
 
     activeRowRef.current += (activeRow - activeRowRef.current) * Math.min(1, delta * 7);
     if (hovered !== null) hoverRowRef.current += (hovered - hoverRowRef.current) * Math.min(1, delta * 12);
+    /**
+     * Where the tab sits along the housing's own long axis, in quad-height
+     * units. The rotation runs that axis the other way — local +y becomes world
+     * +x, so row 0 would land on the RIGHT — and negating is exactly the
+     * relabelling that fixes it, since rowToY(N-1-i) === -rowToY(i).
+     */
     const rowToY = (row: number) => (((N - 1) / 2 - row) * PITCH) / QUAD_H;
-    plateMat.uniforms.uActiveY.value = rowToY(activeRowRef.current);
-    plateMat.uniforms.uHoverY.value = rowToY(hoverRowRef.current);
+    const tabAt = (row: number) => (portrait ? -rowToY(row) : rowToY(row));
+    plateMat.uniforms.uActiveY.value = tabAt(activeRowRef.current);
+    plateMat.uniforms.uHoverY.value = tabAt(hoverRowRef.current);
     plateMat.uniforms.uHoverOn.value = hovered === null ? 0 : open.current;
+    // A tap target wants a bigger glyph than a pointer target. The material is a
+    // module-level singleton, so this is written here rather than at construction.
+    iconMat.uniforms.uSize.value = portrait ? ICON_P : ICON;
 
     // Labels fade in with the panel; the hovered one leads.
     const live = Math.round(activeRowRef.current);
@@ -467,19 +556,32 @@ export function Nav3D() {
       // Troika replaces its derived materials on re-sync, so this is re-asserted
       // every frame; it is a no-op once they are already transparent.
       forceTransparent(t);
-      const o = open.current * (hovered === i ? 1 : 0.68);
+      /*
+       * Portrait prints NO label. The filled tab with its icon knocked out dark
+       * already says which section is live, and a word under the bar only
+       * repeated it — in the one place a phone can least afford the line.
+       */
+      const o = portrait ? 0 : open.current * (hovered === i ? 1 : 0.68);
       t.fillOpacity = o;
       // The outline has its own opacity; leaving it lit would print black
       // ghosts of the labels on the closed panel.
       t.outlineOpacity = o * 0.9;
-      // On the solid tab the label is knocked out of the fill, so it flips to
-      // the housing's own dark. Assigned only on change: troika re-syncs its
-      // material when colour is set, and this runs every frame.
-      const want = i === live ? KNOCK : PALETTE.textBright;
-      if (labelColor.current[i] !== want) {
-        labelColor.current[i] = want;
-        t.color = want;
-        t.outlineOpacity = 0;
+      /*
+       * The knock-out is a landscape idea and must NOT run in portrait: that
+       * label is not sitting on the filled tab, it is out on the world with only
+       * its outline for contrast — and the branch below sets outlineOpacity to
+       * zero, which would take the outline away.
+       */
+      if (!portrait) {
+        // On the solid tab the label is knocked out of the fill, so it flips to
+        // the housing's own dark. Assigned only on change: troika re-syncs its
+        // material when colour is set, and this runs every frame.
+        const want = i === live ? KNOCK : PALETTE.textBright;
+        if (labelColor.current[i] !== want) {
+          labelColor.current[i] = want;
+          t.color = want;
+          t.outlineOpacity = 0;
+        }
       }
     }
 
@@ -487,16 +589,30 @@ export function Nav3D() {
     // slicing it: the corner art holds its size while the box around it moves.
     const fr = frame.current;
     if (fr) {
-      fr.scale.set(width, PLATE_H, 1);
-      fr.position.x = width / 2;
+      if (portrait) {
+        // Genuinely swapped rather than rotated: rotating would stand the
+        // authored corner art on its side. The border tuple swaps with it.
+        fr.scale.set(BAR_LEN, BAR_D, 1);
+        fr.position.x = 0;
+      } else {
+        fr.scale.set(width, PLATE_H, 1);
+        fr.position.x = width / 2;
+      }
     }
     // Hit rows are only as wide as the panel actually is, so a collapsed nav
     // cannot swallow pointer events meant for the world behind it.
     for (let i = 0; i < N; i++) {
       const h = hits.current[i];
       if (!h) continue;
-      h.scale.x = width;
-      h.position.x = width / 2;
+      if (portrait) {
+        // Deep enough to take in the caption strip under the bar as well, which
+        // is what gets each column past a 44px target on the short axis.
+        h.scale.y = quadW + LABEL_DROP * 2;
+        h.position.y = -LABEL_DROP;
+      } else {
+        h.scale.x = width;
+        h.position.x = width / 2;
+      }
     }
   });
 
@@ -526,11 +642,11 @@ export function Nav3D() {
           variant="hud"
           src={FRAME_SRC}
           slice={FRAME_SLICE}
-          borderWorld={FRAME_BORDER}
+          borderWorld={portrait ? FRAME_BORDER_P : FRAME_BORDER}
           keyBlack
           meshRef={frame}
-          width={COLLAPSED_W}
-          height={PLATE_H}
+          width={portrait ? BAR_LEN : COLLAPSED_W}
+          height={portrait ? BAR_D : PLATE_H}
           border={0.044}
           // `fill` in the CSS: the art's own middle is drawn too. Harmless on
           // the drawn fallback, whose centre cell is empty.
@@ -539,7 +655,7 @@ export function Nav3D() {
           // is what the bloom pass turns into a halo. The frame should read as
           // drawn, not lit.
           intensity={0.5}
-          position={[COLLAPSED_W / 2, 0, 0.001]}
+          position={portrait ? [0, 0, 0.001] : [COLLAPSED_W / 2, 0, 0.001]}
           renderOrder={996}
         />
         {geometry && (
@@ -556,6 +672,13 @@ export function Nav3D() {
           <group key={s.id}>
             <TerminalText
               ref={((t: TroikaText | null) => { labels.current[i] = t; }) as never}
+              /*
+               * Left where landscape puts them and simply never shown in
+               * portrait — see the opacity loop. They stay mounted rather than
+               * being conditionally rendered: troika's layout for every label is
+               * preloaded at boot, and unmounting throws it away, so a rotation
+               * back to landscape would have to pay for all six again.
+               */
               position={[LABEL_X, ROW_Y[i], 0.003]}
               anchorX="left"
               fontSize={0.025}
@@ -573,24 +696,46 @@ export function Nav3D() {
                 open while the pointer travels out over the labels. */}
             <mesh
               ref={((h: THREE.Mesh | null) => { hits.current[i] = h; }) as never}
-              position={[COLLAPSED_W / 2, ROW_Y[i], 0.012]}
+              position={portrait ? [COL_X[i], 0, 0.012] : [COLLAPSED_W / 2, ROW_Y[i], 0.012]}
               visible={false}
-              onPointerOver={(e) => {
+              /*
+               * NOT REGISTERED IN PORTRAIT, rather than registered and ignored.
+               * R3F synthesises pointerover from a touch but there is no
+               * pointerout to match it, so a tap would latch `hovered` on that
+               * column for the rest of the session and leave the document
+               * cursor set to 'pointer'. Handing R3F no handler is the only
+               * airtight version of "no hover here".
+               */
+              onPointerOver={portrait ? undefined : (e) => {
                 e.stopPropagation();
                 setHovered(i);
                 document.body.style.cursor = 'pointer';
               }}
-              onPointerOut={() => {
+              onPointerOut={portrait ? undefined : () => {
                 setHovered((h) => (h === i ? null : h));
                 document.body.style.cursor = 'auto';
               }}
+              onPointerDown={portrait ? (e) => {
+                down.current = { x: e.clientX, y: e.clientY, t: e.timeStamp };
+              } : undefined}
               onClick={(e) => {
                 e.stopPropagation();
+                /*
+                 * The page's primary gesture is a vertical drag, and it can
+                 * perfectly well begin on the bar. Only a real tap navigates.
+                 */
+                if (portrait) {
+                  const d = down.current;
+                  down.current = null;
+                  if (!d) return;
+                  if (Math.hypot(e.clientX - d.x, e.clientY - d.y) > 10) return;
+                  if (e.timeStamp - d.t > 500) return;
+                }
                 history.replaceState(null, '', `#${s.id}`);
                 scrollToProgress(s.range[0] + 0.012, { duration: 2.2 });
               }}
             >
-              <planeGeometry args={[1, PITCH]} />
+              <planeGeometry args={portrait ? [PITCH, 1] : [1, PITCH]} />
             </mesh>
           </group>
         ))}

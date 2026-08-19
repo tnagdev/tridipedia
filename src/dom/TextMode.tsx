@@ -4,6 +4,7 @@ import {
   yearsOfExperience, jobRangeLabel, jobDurationLabel, jobStart, jobEnd,
 } from '@/content/loadContent';
 import { TECH_BRAND, SOCIAL_BRAND, brandFor } from '@/text/brand';
+import { PORTRAIT_ROWS, PORTRAIT_COLS } from '@/content/asciiPortrait';
 import { useUi, setUi } from '@/state/store';
 
 const KEY = 'tridipedia:textmode';
@@ -72,7 +73,15 @@ export function TextMode() {
     return () => document.body.classList.remove('is-textmode');
   }, []);
 
-  const avatar = assetUrl(profile.avatar);
+  /*
+   * The portrait is the SAME hand-made block-character self-portrait the 3D
+   * About section draws — src/content/asciiPortrait.ts, one source for both.
+   * There a shader bakes it into a cell mask; here it is simply the text it
+   * already was, which is the one place on this site where that costs nothing
+   * and needs no WebGL. That last part matters: Text Mode is what a visitor
+   * without WebGL is given, so it can never depend on the canvas path.
+   */
+  const portrait = PORTRAIT_ROWS.join('\n');
 
   return (
     <div className="tm">
@@ -110,16 +119,25 @@ export function TextMode() {
         <section className="tm-section" id="about" aria-labelledby="h-about">
           <h2 id="h-about"><span className="tm-num">01</span>About</h2>
           <div className="tm-about">
-            {avatar && (
-              <figure className="tm-avatar">
-                <img
-                  src={avatar}
-                  alt={`Portrait of ${profile.fullName ?? profile.name}`}
-                  loading="lazy"
-                />
-                <figcaption>{profile.handle}</figcaption>
-              </figure>
-            )}
+            <figure className="tm-avatar">
+              {/*
+                role="img" with a label, NOT bare text: a screen reader given
+                this raw would read out two and a half thousand block
+                characters. The label is what an alt attribute was doing.
+                --tm-ascii-adv is the block's width in ems (columns x the
+                monospace advance), which is what lets the CSS size the type
+                from the column width instead of the other way round.
+              */}
+              <pre
+                className="tm-ascii"
+                role="img"
+                aria-label={`Portrait of ${profile.fullName ?? profile.name}, drawn in text`}
+                style={{ ['--tm-ascii-adv' as string]: PORTRAIT_COLS * 0.6 }}
+              >
+                {portrait}
+              </pre>
+              <figcaption>{profile.handle}</figcaption>
+            </figure>
             <div className="tm-bio">
               {bioParagraphs.map((p, i) => (
                 <p key={i}>{p}</p>

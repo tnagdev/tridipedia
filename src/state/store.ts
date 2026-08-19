@@ -20,6 +20,18 @@ export interface UiState {
   skillId: string | null;
   /** id of the project whose dossier popup is open, or null. Changes only on click. */
   projectId: string | null;
+  /**
+   * Viewport height > width. THE mobile signal, for the canvas and the DOM
+   * alike; mirrors `@media (orientation: portrait)` exactly so CSS and JS can
+   * never disagree. Written only by installViewportWatch() in state/viewport.ts.
+   *
+   * Deliberately NOT derived from useThree(s => s.size): that does not exist
+   * outside the Canvas, and on iOS it changes on every URL-bar tick, which
+   * would re-render every section mid-scroll.
+   */
+  portrait: boolean;
+  /** env(safe-area-inset-top) in CSS px. 0 on everything without a notch. */
+  safeTop: number;
 }
 
 let state: UiState = {
@@ -32,6 +44,10 @@ let state: UiState = {
   openCard: null,
   skillId: null,
   projectId: null,
+  // Seeded here rather than left false so the very first render is already
+  // correct; installViewportWatch() keeps it so.
+  portrait: typeof matchMedia !== 'undefined' && matchMedia('(orientation: portrait)').matches,
+  safeTop: 0,
 };
 
 const listeners = new Set<() => void>();

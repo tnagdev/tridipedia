@@ -56,36 +56,34 @@ export interface Job {
   start: string;
   /** null means present. */
   end: string | null;
-  highlights: string[];
   /** Path under public/ for the company mark. */
   logo: string | null;
   /** The company's own site. */
   url: string | null;
-  /** Career-phase label for this role, e.g. "MOBILE MANIA". */
-  phase: string;
-  /** One-paragraph description shown in the card's detail popup. */
-  summary: string;
   /** Stack used in this role, rendered as chips in the popup. */
   tech: string[];
   /**
-   * The engineer's-log narrative, in the voice of a system recalling its own
-   * past. Prose ONLY — dates, durations and role titles render from the
-   * structured fields above, so the copy cannot drift out of sync with them.
+   * One short line for the About card's current-role tile, and the ONLY place
+   * it renders — the Experience section and the text mirror both tell the
+   * story from `story` instead.
+   *
+   * Keep it to about 140 characters. The tile is small and gives this four
+   * lines at 0.19; anything longer runs off the bottom of the card.
+   */
+  blurb: string | null;
+  /**
+   * The ONLY prose a job carries, and the one both modes render.
+   *
+   * There used to be three overlapping fields here — `summary` for the popup,
+   * `highlights` for the DOM, `story` for the card — which meant the 3D world
+   * and the text mirror described the same job in different words, and the
+   * bullet list existed nowhere in 3D at all. One narrative, rendered
+   * everywhere, cannot drift from itself.
+   *
+   * Prose ONLY. Dates, durations, role titles and the stack render from the
+   * structured fields above, so the copy cannot contradict them.
    */
   story: string[];
-}
-
-/**
- * Narrative, deliberately DECOUPLED from Job. The old CareerTV.tsx dated these
- * differently from the resume; phases are story, jobs are fact, and forcing
- * them into one array would bake the contradiction in permanently.
- */
-export interface CareerPhase {
-  id: string;
-  title: string;
-  subtitle: string;
-  yearsLabel: string;
-  blurb: string;
 }
 
 export interface Project {
@@ -183,7 +181,6 @@ export interface SiteContent {
   phone: string | null;
   skills: Skill[];
   experience: Job[];
-  phases: CareerPhase[];
   projects: Project[];
   socials: Social[];
   rainDefaults: RainConfig;

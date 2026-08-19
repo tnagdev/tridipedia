@@ -24,9 +24,14 @@ npm run dev
 
 ## Editing content
 
-**Everything lives in [`src/content/site.json`](src/content/site.json).** Bio,
-skills, jobs, career phases, projects, socials, the colour palette, the camera
-keyframes and the per-section rain settings. Types are in
+**Everything lives in [`src/data/`](src/data)**, one file per kind of thing, so
+a typo in a project cannot take out the camera keyframes.
+[`site.json`](src/data/site.json) is the site itself (profile, contact, camera
+journey, per-section rain), and [`skills.json`](src/data/skills.json),
+[`experience.json`](src/data/experience.json),
+[`projects.json`](src/data/projects.json) and
+[`social.json`](src/data/social.json) each carry one list. They are assembled in
+[`loadContent.ts`](src/content/loadContent.ts); types are in
 [`content.types.ts`](src/content/content.types.ts).
 
 Things that are *derived* and must not be hardcoded: years of experience (from
@@ -34,10 +39,45 @@ Things that are *derived* and must not be hardcoded: years of experience (from
 and the Experience canyon geometry — monolith lengths are computed from the real
 dates, so changing a date physically changes the world.
 
-Still to fill in: `email`, `socials[].url`, and the three `projects` entries.
-They are `null` / `placeholder: true` today, and both sections are designed to
-look deliberate while empty. Set `placeholder: false` and the frames take real
-content with no code changes.
+A job's main prose is `story`, and both modes render it: the flight card types
+it out on scroll, the dossier shows all of it at once, and `SiteContentDom`
+prints it as paragraphs. Everything else about a job is structured (`role`,
+`location`, dates, `tech`), so the two modes cannot describe the same job in
+different words.
+
+The one exception is `blurb`: a single short line that renders ONLY on the About
+card's current-role tile, which is far too small for the story. Keep it to about
+140 characters — the tile gives it four lines at 0.19 and nothing clips it.
+
+Still to fill in: the GitHub, X and YouTube `socials[].url`, and the
+`projects[].url` links. Anything unpublished is `null` / `placeholder: true`,
+and every section is designed to look deliberate while empty.
+
+Artwork goes under `public/assets/`. A `projects[].thumbnail` is drawn by
+[`ProjectThumb`](src/objects/ProjectThumb.tsx) in both places a project appears,
+so the wall and the open dossier cannot show it differently: the wall crops to
+its fixed frame, and the dossier sizes its plane to the picture's own aspect so
+nothing is cut or letterboxed. Screenshots are shown straight and graded toward
+the world's palette rather than run through `AsciiImage` — glyph-quantising a
+1900px UI screenshot destroys the thing it was added to show. `grade` on that
+component is the dial if it wants to be more or less green.
+
+No list here is count-limited any more. The About bento derives its skill grid
+from `skills.length` (it was a hardcoded 3×3, and the tenth skill indexed off
+the end of the row array and positioned every mark from there on at NaN), and
+the Projects camera path is generated from the project count.
+
+A new skill id does still want an entry in [`brand.ts`](src/text/brand.ts):
+`TECH_BRAND`, not `skills[].color`, is what the marks actually render from, and
+a missing id falls back to house green. Mind the additive floor noted in that
+file — a black-on-white brand like Next.js, GitHub or Kafka has to be inverted
+to its own dark-mode foreground or the mark comes out invisible.
+
+`projects` has no such limit. Adding one lengthens the journey instead: the
+camera path through the gallery is generated from the count, and the section
+takes the scroll it needs, so three projects run the site at ~1790vh and six at
+~2080vh. Every other section keeps exactly the scroll it had. See
+[`projectsPath.mjs`](src/camera/projectsPath.mjs).
 
 After editing camera keyframes, run `npm run check:journey` — it verifies that
 the camera actually arrives where each section's content is.
@@ -64,13 +104,17 @@ own dimensions rather than hand-tuned world coordinates, which is what stops
 copy overflowing its panel when a size changes.
 
 Navigation is `src/scene/Nav3D.tsx` — rendered in WebGL, parented to the camera,
-and repositioned every frame from the camera's **current** fov (which is
-keyframed 55→78 across the journey, so anything pinned at a fixed height
-drifts). `src/dom/SrNav.tsx` is the real keyboard/screen-reader navigation.
+and both repositioned **and rescaled** every frame from the camera's current fov.
+The fov is keyframed 54→78 across the journey, and the rail sits at a fixed
+distance in front of the camera, so its apparent size is `worldSize / halfH`:
+pinning the position alone left it swelling to 67% of viewport height at the
+narrow end and shrinking to 42% at the wide end. Scaling with `halfH` against a
+reference fov cancels that, and it now holds one size the whole way down.
+`src/dom/SrNav.tsx` is the real keyboard/screen-reader navigation.
 
 ## Interaction
 
-Two things respond to clicks, and both are worth knowing about:
+Three things respond to clicks, and all are worth knowing about:
 
 - **Skills** — chips are strung in a helix around the *camera spline itself*, so
   the layout is a pure function of `skills.length`; adding a skill to
@@ -84,6 +128,33 @@ Two things respond to clicks, and both are worth knowing about:
   sweeps 58→78). Clicking opens a dossier; Escape or scrolling away closes it.
   Scroll is deliberately **never** locked — `F.raw` is read from
   `window.scrollY`, so locking would desync the camera from the scrollbar.
+- **Projects** — the camera does not fly past this wall, it tracks along it.
+  One continuous horizontal glide at constant speed, wall square-on, every
+  project passing through dead centre of frame on the way; the glide speed is
+  derived from how long each project should own the centre (`CENTRED_VH`).
+  Two earlier versions stopped at each frame and both read as judder — the
+  motion was accelerate, stop, accelerate, stop — so there are no stops at all.
+  Leaving, the camera carries ~10 units on past the last project before the
+  path begins to turn, then banks up and away into Contact, and the aim hands
+  over from the wall to Contact's own as it goes. Keyframes are sampled off a
+  speed profile rather than authored, because `remap()` is linear across each
+  interval and therefore keyframe spacing *is* the speed graph — and the
+  spacing has to be continuous across the seams, so both tapers grow
+  geometrically out of the glide's own spacing toward the authored journey's
+  much coarser keying. Measured on the shipped curve: 0% speed variation across
+  the glide, zero direction reversals, zero vertical wobble, and no aim flip on
+  the way out. `check:journey` asserts every project holds screen centre for
+  18vh+.
+  Clicking a frame opens its dossier, built to the SKILLS overlay's aesthetic
+  rather than the job card's: unframed, tinted in that frame's own colour,
+  thumbnail slot left and type right, with the link out drawn as one of the
+  same plate-stack buttons the socials use. Scroll is locked while it is open
+  (`setScrollLock`) — safe here, unlike in Experience, because the overlay is
+  modal and the journey is meant to hold. Behind it sits
+  [`Scrim`](src/objects/Scrim.tsx): frosted glass, not a real blur. Blurring
+  means a render target and a second pass, and `Effects.tsx` already rules that
+  class of effect out on cost; muting the rain's contrast to a fifth gets the
+  same read for one quad, because bloom has already smeared every point of it.
 
 ## Architecture
 
@@ -110,6 +181,11 @@ Three rules the codebase depends on:
    program cache is keyed by material instance, so this is what keeps compiled
    shaders alive across section mount/unmount. A `new ShaderMaterial()` inside a
    render brings back a 200–600ms compile hitch at every section boundary.
+   Per-instance values are pushed in `onBeforeRender`, and that block **must**
+   end with `commitUniforms(material)` — three skips the uniform upload when the
+   material has not changed between draws, so without it the second and third
+   object drawn render with the first one's values. See
+   [`resources.ts`](src/objects/resources.ts) for the full account.
 3. **The rain is a pure function of `uTime`.** Instance buffers are uploaded once
    and never touched again; a frame costs ~15 float writes and one draw call.
 4. **Nothing allocates GPU resources per mount.** Sections mount and unmount as

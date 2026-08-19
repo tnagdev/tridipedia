@@ -1,8 +1,8 @@
 {
   "meta": {
     "url": "https://tridipedia.web.app",
-    "title": "Tridipedia — Journey of a Developer",
-    "description": "Tridibesh — Frontend & Full-Stack Developer from India. A portfolio rendered as a journey through three-dimensional digital rain.",
+    "title": "Tridipedia: Journey of a Developer",
+    "description": "Tridibesh Nag, Technical Lead at Next Zen Minds. Backend and AI systems: LLM pipelines, RAG and multi-tenant security platforms. A portfolio rendered as a journey through three-dimensional digital rain.",
     "ogImage": "/og/og-cover.jpg"
   },
   "profile": {
@@ -10,23 +10,23 @@
     "tagline": "Journey of a Developer",
     "name": "Tridibesh",
     "fullName": "Tridibesh Nag",
-    "designation": "Technical Lead",
-    "title": "Frontend & Creative Engineer",
+    "designation": "Senior Full Stack AI Engineer",
+    "title": "Talking to machines long before they learned to talk back.",
     "handle": "@tridibesh",
     "roles": [
-      "Web",
-      "JS",
-      "Frontend",
-      "FullStack",
-      "App"
+      "Backend",
+      "Full-Stack",
+      "Platform",
+      "API",
+      "AI Systems"
     ],
     "codingSince": 2018,
     "location": "India",
-    "bio": "I am a passionate FrontEnd Developer from India, currently working at NextZen Minds as a Tech Lead. I have been building stuff on the web since 2018. I am a fan of JavaScript and it gives me immense joy to try out new JS libraries as they keep popping up every now and then. I have also built a number of cross-platform mobile applications using Ionic and React Native. I love creative coding with JS and building delightful interactive and animated user interfaces for fun.",
+    "bio": "Software engineer and tech lead with 8+ years of experience building things across the stack - JavaScript, React, Node.js, Python, and more.\n\nI enjoy turning messy problems into clean, scalable software, digging into architecture and performance, and now mostly arguing with an AI at 2 AM.\n\nLately, I've been exploring the intersection of software engineering and AI — RAG, LLMs, agents, embeddings, and multimodal systems.",
     "avatar": "/assets/profile/avatar.jpg"
   },
-  "email": "hello@example.com",
-  "phone": "+91 90000 00000",
+  "email": "tnag97@gmail.com",
+  "phone": "+917908418696",
   "rainDefaults": {
     "speed": 1,
     "density": 1,

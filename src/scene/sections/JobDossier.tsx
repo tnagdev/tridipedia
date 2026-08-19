@@ -129,16 +129,30 @@ export function JobDossier() {
         {`${jobRangeLabel(job)}   ·   ${jobDurationLabel(job)}   ·   ${job.location}`}
       </TerminalText>
 
+      {/*
+        The job's story, whole.
+
+        This block used to render a separate `summary` field, which meant a job
+        was described one way on the card and another way in its own popup. It
+        is not redundant to repeat the card's copy here: the card reveals the
+        story line by line as you scroll past it (clipRect in JobCard), so
+        until now there was no view that showed all of it at once.
+
+        0.70 of bodySize rather than 0.92: at 0.92 the longest of the three
+        stories runs 6.8 units into a 4.2 unit gap and prints straight through
+        the tenure bar. The scale is still derived from the panel, so a
+        resize still carries the copy with it.
+      */}
       <TerminalText
         position={[box.left, box.top - box.titleSize * 2.9, 0.06]}
         anchorX="left"
         anchorY="top"
-        fontSize={box.bodySize * 0.92}
+        fontSize={box.bodySize * 0.70}
         lineHeight={1.5}
         maxWidth={box.width}
         color="#DFF6FF"
       >
-        {job.summary}
+        {job.story.join('\n\n')}
       </TerminalText>
 
       {/* tenure, drawn as a bar so it can be compared at a glance */}

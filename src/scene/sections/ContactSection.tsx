@@ -79,8 +79,8 @@ const SOCIAL_SIZE = 2.9;
 const SOCIAL_STEP = 3.7;
 const SOCIAL_X = socials.map((_, i) => (i - (socials.length - 1) / 2) * SOCIAL_STEP);
 
-const RETURN_LABEL = '↑ RETURN TO ORIGIN';
-const STATUS = 'CONNECTION OPEN  ·  AWAITING SIGNAL';
+const RETURN_LABEL = 'RETURN TO HOME';
+const STATUS = 'OPEN FOR COLLABORATION  ·  READY TO CONNECT';
 
 /* ------------------------------- the re-spell ----------------------------- */
 
@@ -355,89 +355,89 @@ export function ContactSection({ formationCount = 0 }: { formationCount?: number
       {/* Inside the billboarded group, so a local x offset is a SCREEN-space
           offset — which is what clearing the nav gutter needs to be. */}
       <group position={[shiftX, 0, 0]}>
-      {/* Corner brackets and nothing else — additive, no back plate, so the
+        {/* Corner brackets and nothing else — additive, no back plate, so the
           funnel reads straight through the copy. */}
-      <HudBracket
-        width={22 * fit}
-        height={17 * fit}
-        lock={deckOn ? 1 : 0}
-        opacity={0.55}
-        color={PALETTE.neon}
-        position={[0, -0.4 * fit, -0.8]}
-      />
+        <HudBracket
+          width={22 * fit}
+          height={17 * fit}
+          lock={deckOn ? 1 : 0}
+          opacity={0.55}
+          color={PALETTE.neon}
+          position={[0, -0.4 * fit, -0.8]}
+        />
 
-      {/* The word, made of rain. Parented so one transform gives it position,
+        {/* The word, made of rain. Parented so one transform gives it position,
           orientation and framing — the camera looks 73 degrees up the funnel
           axis at the end, so anything world-anchored here stacks on screen. */}
-      {formationCount > 0 && (
-        <HeroFormation
-          text={HEADLINE}
-          count={formationCount}
-          progress={fp}
-          position={[0, Y.word * fit, -0.4]}
-          worldWidth={17 * fit}
-          glyphSize={0.24 * fit}
-        />
-      )}
+        {formationCount > 0 && (
+          <HeroFormation
+            text={HEADLINE}
+            count={formationCount}
+            progress={fp}
+            position={[0, Y.word * fit, -0.4]}
+            worldWidth={17 * fit}
+            glyphSize={0.24 * fit}
+          />
+        )}
 
-      {/* ...and the type it settles into, in the same place. */}
-      <TerminalText
-        ref={headRef as never}
-        position={[0, Y.word * fit, 0]}
-        fontSize={1.8 * fit}
-        color={PALETTE.textBright}
-        letterSpacing={0.08}
-        fillOpacity={0}
-      >
-        {HEADLINE}
-      </TerminalText>
+        {/* ...and the type it settles into, in the same place. */}
+        <TerminalText
+          ref={headRef as never}
+          position={[0, Y.word * fit, 0]}
+          fontSize={1.8 * fit}
+          color={PALETTE.textBright}
+          letterSpacing={0.08}
+          fillOpacity={0}
+        >
+          {HEADLINE}
+        </TerminalText>
 
-      <TerminalText
-        ref={emailRef as never}
-        position={[0, Y.email * fit, 0]}
-        fontSize={1.0 * fit}
-        color={PALETTE.accent}
-        fillOpacity={0}
-      >
-        {EMAIL_TEXT}
-      </TerminalText>
+        <TerminalText
+          ref={emailRef as never}
+          position={[0, Y.email * fit, 0]}
+          fontSize={1.0 * fit}
+          color={PALETTE.accent}
+          fillOpacity={0}
+        >
+          {EMAIL_TEXT}
+        </TerminalText>
 
-      <TerminalText
-        ref={statusRef as never}
-        position={[0, Y.status * fit, 0]}
-        fontSize={0.4 * fit}
-        color={PALETTE.textDim}
-        letterSpacing={0.14}
-        fillOpacity={0}
-      >
-        {STATUS}
-      </TerminalText>
+        <TerminalText
+          ref={statusRef as never}
+          position={[0, Y.status * fit, 0]}
+          fontSize={0.4 * fit}
+          color={PALETTE.textDim}
+          letterSpacing={0.14}
+          fillOpacity={0}
+        >
+          {STATUS}
+        </TerminalText>
 
-      <MarkStack items={marks} hoveredId={hovered} opacity={deckOn ? 1 : 0} />
+        <MarkStack items={marks} hoveredId={hovered} opacity={deckOn ? 1 : 0} />
 
-      {/* One caption for all four, so the marks are not fenced in by labels. */}
-      <TerminalText
-        ref={captionRef as never}
-        position={[0, Y.caption * fit, 0]}
-        fontSize={0.52 * fit}
-        color={hoveredSocial ? PALETTE.textBright : PALETTE.textDim}
-        letterSpacing={0.08}
-        fillOpacity={0}
-      >
-        {caption}
-      </TerminalText>
+        {/* One caption for all four, so the marks are not fenced in by labels. */}
+        <TerminalText
+          ref={captionRef as never}
+          position={[0, Y.caption * fit, 0]}
+          fontSize={0.52 * fit}
+          color={hoveredSocial ? PALETTE.textBright : PALETTE.textDim}
+          letterSpacing={0.08}
+          fillOpacity={0}
+        >
+          {caption}
+        </TerminalText>
 
-      <TerminalText
-        ref={returnRef as never}
-        position={[0, Y.return * fit, 0]}
-        fontSize={0.58 * fit}
-        color={hovered === 'return' ? PALETTE.textBright : PALETTE.textDim}
-        letterSpacing={0.12}
-      >
-        {RETURN_LABEL}
-      </TerminalText>
+        <TerminalText
+          ref={returnRef as never}
+          position={[0, Y.return * fit, 0]}
+          fontSize={0.58 * fit}
+          color={hovered === 'return' ? PALETTE.textBright : PALETTE.textDim}
+          letterSpacing={0.12}
+        >
+          {RETURN_LABEL}
+        </TerminalText>
 
-      {/*
+        {/*
         Armed on the section index rather than left to `visible` to suppress
         them: three raycasts hidden objects, so an unarmed hotspot would still
         swallow the pointer from three sections away.
@@ -445,24 +445,24 @@ export function ContactSection({ formationCount = 0 }: { formationCount?: number
         The ids are load-bearing — A11yLayer builds its keyboard targets from
         `social:${id}` and `return`.
       */}
-      {live &&
-        socials.map((s, i) => (
+        {live &&
+          socials.map((s, i) => (
+            <Hotspot
+              key={s.id}
+              id={`social:${s.id}`}
+              position={[SOCIAL_X[i] * fit, Y.socials * fit, 0.9]}
+              size={[(SOCIAL_STEP - 0.3) * fit, (SOCIAL_SIZE + 0.4) * fit, 1.6]}
+              onActivate={() => s.url && window.open(s.url, '_blank', 'noopener')}
+            />
+          ))}
+        {live && (
           <Hotspot
-            key={s.id}
-            id={`social:${s.id}`}
-            position={[SOCIAL_X[i] * fit, Y.socials * fit, 0.9]}
-            size={[(SOCIAL_STEP - 0.3) * fit, (SOCIAL_SIZE + 0.4) * fit, 1.6]}
-            onActivate={() => s.url && window.open(s.url, '_blank', 'noopener')}
+            id="return"
+            position={[0, Y.return * fit, 0.4]}
+            size={[8 * fit, 1.3 * fit, 1.2]}
+            onActivate={() => scrollToProgress(0, { duration: 5 })}
           />
-        ))}
-      {live && (
-        <Hotspot
-          id="return"
-          position={[0, Y.return * fit, 0.4]}
-          size={[8 * fit, 1.3 * fit, 1.2]}
-          onActivate={() => scrollToProgress(0, { duration: 5 })}
-        />
-      )}
+        )}
       </group>
     </group>
   );

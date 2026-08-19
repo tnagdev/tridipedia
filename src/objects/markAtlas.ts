@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { svgDataUrl } from './socialMarks';
 import { navSvgDataUrl } from './navMarks';
+import { iconSvgDataUrl } from './iconMarks';
 import { MARK_SOURCES } from '@/content/loadContent';
 
 /**
@@ -65,7 +66,8 @@ function sourceFor(id: string): string | null {
   return MARK_SOURCES[id]
     ?? (TECH_FILE[id] ? `/icons/${TECH_FILE[id]}.svg` : null)
     ?? svgDataUrl(id)
-    ?? navSvgDataUrl(id);
+    ?? navSvgDataUrl(id)
+    ?? iconSvgDataUrl(id);
 }
 
 const cache = new Map<string, Promise<MarkAtlas>>();

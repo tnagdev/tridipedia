@@ -13,7 +13,7 @@ export function ReducedMotionChip() {
   if (!reduced || dismissed) return null;
   return (
     <div className="reduced-chip" role="status">
-      <span>Reduced motion is on. Motion here is minimised — a plain text version is also available.</span>
+      <span>Reduced motion is on. Motion here is minimised. A plain text version is also available.</span>
       <button type="button" onClick={() => setTextMode(true)}>
         Text mode
       </button>

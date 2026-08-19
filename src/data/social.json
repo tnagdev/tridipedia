@@ -1,36 +1,36 @@
 {
   "socials": [
     {
-      "id": "github",
-      "label": "GitHub",
-      "handle": "@example",
-      "url": "https://github.com/example",
-      "icon": "/assets/social/github.svg",
-      "placeholder": true
-    },
-    {
       "id": "linkedin",
       "label": "LinkedIn",
-      "handle": "@example",
-      "url": "https://www.linkedin.com/in/example",
+      "handle": "@tridibesh-nag",
+      "url": "https://www.linkedin.com/in/tridibesh-nag-b9381b16a/",
       "icon": "/assets/social/linkedin.svg",
-      "placeholder": true
+      "placeholder": false
     },
     {
-      "id": "youtube",
-      "label": "YouTube",
-      "handle": "@example",
-      "url": "https://www.youtube.com/@example",
-      "icon": "/assets/social/youtube.svg",
-      "placeholder": true
+      "id": "github",
+      "label": "GitHub",
+      "handle": "@tnagdev",
+      "url": "https://github.com/tnagdev",
+      "icon": "/assets/social/github.svg",
+      "placeholder": false
     },
     {
       "id": "x",
       "label": "X",
-      "handle": "@example",
-      "url": "https://x.com/example",
+      "handle": "@Tridibesh001",
+      "url": "https://x.com/Tridibesh001",
       "icon": "/assets/social/x.svg",
-      "placeholder": true
+      "placeholder": false
+    },
+    {
+      "id": "youtube",
+      "label": "YouTube",
+      "handle": "@Codipedia",
+      "url": "https://www.youtube.com/@Codipedia",
+      "icon": "/assets/social/youtube.svg",
+      "placeholder": false
     }
   ]
 }

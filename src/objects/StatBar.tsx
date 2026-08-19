@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { PALETTE } from '@/text/palette';
-import { cachedPlane } from './resources';
+import { cachedPlane, commitUniforms } from './resources';
 import { F } from '@/state/frameState';
 
 /**
@@ -120,6 +120,7 @@ export function StatBar({
         mat.uniforms.uOpacity.value = opacity;
         mat.uniforms.uSegments.value = segments;
         (mat.uniforms.uColor.value as THREE.Color).set(color);
+        commitUniforms(mat);
       }}
     />
   );

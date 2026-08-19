@@ -3,8 +3,9 @@ import skillsData from '@/data/skills.json';
 import experienceData from '@/data/experience.json';
 import projectsData from '@/data/projects.json';
 import socialData from '@/data/social.json';
+import { buildProjectsJourney, projectTextZones } from '@/camera/projectsPath.mjs';
 import type {
-  CareerPhase, Job, Project, RainConfig, SectionConfig, SectionId, SiteContent, Skill, Social,
+  Job, Project, RainConfig, SectionConfig, SectionId, SiteContent, Skill, Social,
 } from './content.types';
 
 /**
@@ -21,18 +22,47 @@ import type {
  * falls back rather than throwing. A missing field shows an empty state; it
  * never takes the site down.
  */
-type SiteFile = Omit<SiteContent, 'skills' | 'experience' | 'phases' | 'projects' | 'socials'>;
+type SiteFile = Omit<SiteContent, 'skills' | 'experience' | 'projects' | 'socials'>;
 
-export const content: SiteContent = {
+const base = {
   ...(site as unknown as SiteFile),
   skills: (skillsData as unknown as { skills: Skill[] }).skills,
   experience: (experienceData as unknown as { experience: Job[] }).experience,
-  phases: (experienceData as unknown as { phases: CareerPhase[] }).phases,
   projects: (projectsData as unknown as { projects: Project[] }).projects,
   socials: (socialData as unknown as { socials: Social[] }).socials,
 };
 
-export const { profile, skills, experience, phases, projects, socials, meta, journey } = content;
+/**
+ * The Projects camera path is DERIVED from the project count, not authored.
+ *
+ * site.json still holds the keyframes for the whole journey, but the ones
+ * inside the Projects range are replaced here with a walk that stops in front
+ * of every project in turn. That walk needs more scroll for six projects than
+ * for three, so it also re-times the other sections and grows scrollHeightVh to
+ * match — which is why this rewrites `sections` and `journey` together rather
+ * than patching keyframes alone. See src/camera/projectsPath.mjs.
+ *
+ * Everything downstream reads `content`, so this is the only place that has to
+ * know. The authored values in site.json stay the input, never the output.
+ */
+const walk = buildProjectsJourney(base, base.projects.length);
+
+export const content: SiteContent = {
+  ...base,
+  sections: walk.sections.map((s) =>
+    s.id === 'projects' ? { ...s, textZones: projectTextZones(base.projects.length) } : s,
+  ),
+  journey: {
+    ...base.journey,
+    scrollHeightVh: walk.scrollHeightVh,
+    keyframes: walk.keyframes,
+  },
+};
+
+/** Scroll windows where the camera is parked square-on to one project. */
+export const projectHolds = walk.holds;
+
+export const { profile, skills, experience, projects, socials, meta, journey } = content;
 
 /**
  * Resolves an image path from a data file against the app's base URL.
@@ -97,7 +127,7 @@ export function formatMonthYear(d: Date): string {
 }
 
 export function jobRangeLabel(j: Job): string {
-  return `${formatMonthYear(jobStart(j))} — ${j.end ? formatMonthYear(jobEnd(j)) : 'Present'}`;
+  return `${formatMonthYear(jobStart(j))} - ${j.end ? formatMonthYear(jobEnd(j)) : 'Present'}`;
 }
 
 export function jobDurationLabel(j: Job): string {
@@ -127,9 +157,8 @@ export function allCharacters(): string {
     ]),
     ...experience.flatMap((j) => [
       j.company, j.role, j.location, jobRangeLabel(j), jobDurationLabel(j),
-      j.phase, j.summary, ...j.highlights, ...j.tech, ...j.story,
+      j.blurb ?? '', ...j.tech, ...j.story,
     ]),
-    ...phases.flatMap((p) => [p.title, p.subtitle, p.yearsLabel, p.blurb]),
     ...projects.flatMap((p) => [
       p.title, p.summary, p.details ?? '', p.role ?? '', p.year ?? '', ...p.tech,
     ]),

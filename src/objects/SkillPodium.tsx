@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { buildMarkAtlas, type MarkAtlas } from './markAtlas';
 import { QUAD_POSITIONS, QUAD_UVS } from '@/rain/quad';
 import { F } from '@/state/frameState';
-import { cachedGeometry } from './resources';
+import { cachedGeometry, commitUniforms } from './resources';
 
 /**
  * A skill, taken off the lattice and stood on a plinth.
@@ -275,6 +275,7 @@ export function SkillPodium({
           plinth.uniforms.uCap.value = 0;
           plinth.uniforms.uOpacity.value = opacity;
           (plinth.uniforms.uColor.value as THREE.Color).set(color);
+          commitUniforms(plinth);
         }}
       />
       <mesh
@@ -288,6 +289,7 @@ export function SkillPodium({
           plinth.uniforms.uCap.value = 1;
           plinth.uniforms.uOpacity.value = opacity * 0.9;
           (plinth.uniforms.uColor.value as THREE.Color).set(color);
+          commitUniforms(plinth);
         }}
       />
       <mesh
@@ -307,6 +309,7 @@ export function SkillPodium({
           // reads as a flat projection being turned rather than a solid card.
           const c = Math.abs(Math.cos(yaw.current));
           holo.uniforms.uFacing.value = 0.25 + 0.75 * c;
+          commitUniforms(holo);
         }}
       />
     </group>

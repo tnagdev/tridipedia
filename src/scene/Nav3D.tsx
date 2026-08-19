@@ -47,6 +47,16 @@ const NAV_Z = -1.05; // just inside the near plane
 /** Distance from the left edge of the frame, in units at the nav's plane. */
 const MARGIN = 0.034;
 
+/**
+ * The fov the rail's authored size is calibrated to, and the frustum half-height
+ * that follows from it. Everything below is measured against this so the rail
+ * keeps one size on screen no matter what the camera's fov is doing; 66 is the
+ * middle of the journey's 54..78 range, so this is the size it always had at
+ * the midpoint and is now the size it has everywhere.
+ */
+const REF_FOV = 66;
+const REF_HALF_H = Math.tan((REF_FOV * Math.PI) / 360) * Math.abs(NAV_Z);
+
 const N = SECTIONS.length;
 const PITCH = 0.106; // row to row
 const ICON = 0.044;
@@ -387,13 +397,29 @@ export function Nav3D() {
     const width = COLLAPSED_W + (EXPANDED_W - COLLAPSED_W) * open.current;
 
     // Pin to the left of frame whatever the fov is doing — the fov is keyframed
-    // from 55 to 78 across the journey, so anything placed at a fixed x drifts
+    // from 54 to 78 across the journey, so anything placed at a fixed x drifts
     // across the frame and ends up on top of the content.
     const cam = camera as THREE.PerspectiveCamera;
     const halfH = Math.tan(THREE.MathUtils.degToRad(cam.fov) * 0.5) * Math.abs(NAV_Z);
     const halfW = halfH * cam.aspect;
-    // Shrink on narrow viewports so an open panel can never span the frame.
-    const fit = Math.min(1, (halfW * 0.88) / EXPANDED_W, (halfH * 1.7) / PLATE_H);
+    // Then hold a CONSTANT SCREEN SIZE.
+    //
+    // The rail is parented to the camera at a fixed distance, so how big it
+    // looks is set by the frustum, and the frustum breathes with the fov all
+    // the way down the journey. Pinning the position alone was not enough: the
+    // rail still swelled to 67% of viewport height at fov 54 and shrank to 42%
+    // at fov 78, growing and shrinking under the reader as they scrolled.
+    // Scaling with halfH cancels that exactly, because apparent size is
+    // worldSize / halfH and halfH is the only term that moves.
+    //
+    // The two clamps stay: they are what stops an opened panel spanning a
+    // narrow viewport, and they bite only when they are smaller than the
+    // constant-size target.
+    const fit = Math.min(
+      halfH / REF_HALF_H,
+      (halfW * 0.88) / EXPANDED_W,
+      (halfH * 1.7) / PLATE_H,
+    );
     const g = group.current;
     if (g) {
       g.position.set(-halfW + MARGIN * fit, 0, NAV_Z);

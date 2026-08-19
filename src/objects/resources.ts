@@ -63,3 +63,32 @@ export function useDisposable<T extends { dispose(): void }>(factory: () => T, d
   useEffect(() => () => value.dispose(), [value]);
   return value;
 }
+
+/**
+ * Commit per-draw uniform changes on a SHARED material.
+ *
+ * Call this as the LAST thing in an `onBeforeRender` that writes uniforms.
+ *
+ * Every custom material in here is a module-level singleton, and per-instance
+ * values are pushed at draw time so that N objects still cost one compiled
+ * program. That contract has a hole in it, and it is silent: three only
+ * re-uploads a material's uniforms when the material CHANGES between draws
+ * (`refreshMaterial || _currentMaterial !== material` in WebGLRenderer's
+ * setProgram). Draw three project frames back to back and the second and third
+ * render with the FIRST one's uniforms — same colour, same seed, same texture.
+ *
+ * Worse, it is intermittent rather than broken: as soon as some other material
+ * is drawn in between, the next draw does refresh, so the symptom is objects
+ * flickering between each other's values as scene order shifts frame to frame.
+ * It went unnoticed for as long as it did because most of these components only
+ * ever had one instance on screen at a time.
+ *
+ * `uniformsNeedUpdate` is the documented escape hatch and is checked separately
+ * from the material-changed test, so it forces the upload. Verified against
+ * three 172 with two meshes sharing one material: without it both drew the
+ * first mesh's colour, with it each drew its own. Bumping `material.version`
+ * instead does NOT work — that path is short-circuited by the same test.
+ */
+export function commitUniforms(material: THREE.Material): void {
+  (material as THREE.ShaderMaterial).uniformsNeedUpdate = true;
+}

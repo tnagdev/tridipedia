@@ -123,6 +123,12 @@ const CARD = {
   title: profile.title ?? profile.roles.join(' · '),
 };
 
+/**
+ * The current role, in a line. Falls back to the stack so the tile is never
+ * empty if a job arrives without one.
+ */
+const CURRENT_BLURB = current.blurb ?? current.tech.join('  ·  ');
+
 /* ---------------------------- type scale ---------------------------- */
 
 const S = { name: 0.60, desig: 0.25, title: 0.21, prompt: 0.24, bio: 0.235 };
@@ -199,23 +205,42 @@ const SOCIAL_MARKS: StackItem[] = socials.map((s, i) => ({
  * COL.portrait. Sizing the plates first and centring the result is what left a
  * band of dead space down both sides of each group.
  */
-const SKILL_GAP = 0.22;
-const SKILL_SIZE = (COL.side - SKILL_GAP * 2) / 3;
-const SKILL_STEP = SKILL_SIZE + SKILL_GAP;
-const SKILL_X = [-SKILL_STEP, 0, SKILL_STEP];
-const SKILL_Y = [SKILL_STEP, 0, -SKILL_STEP];
 /**
- * The grid fills its whole footprint, so the label lives in the gap above it —
- * flush left with the grid, and nearer to it than to the card overhead.
+ * The grid is a pure function of the skill COUNT.
+ *
+ * It used to be hardcoded 3x3, with the row picked as SKILL_Y[floor(i / 3)] —
+ * an array of three. The tenth skill read past the end of it, got `undefined`,
+ * and every mark from there on was positioned at NaN: the whole instanced mesh
+ * and its hotspots disappeared, from a data change alone. Deriving the shape
+ * means the tile takes nine skills or twenty without anyone editing this file.
  */
-const SKILL_LABEL_X = -COL.side / 2;
-const SKILL_LABEL_Y = SKILL_STEP + SKILL_SIZE / 2 + 0.20;
+const SKILL_GAP = 0.22;
+const SKILL_COLS = Math.max(1, Math.ceil(Math.sqrt(skills.length)));
+const SKILL_ROWS = Math.max(1, Math.ceil(skills.length / SKILL_COLS));
+/** Whichever axis runs out first decides the plate size, so it always fits. */
+const SKILL_SIZE = Math.min(
+  (COL.side - SKILL_GAP * (SKILL_COLS - 1)) / SKILL_COLS,
+  (TILE.skills.h - SKILL_GAP * (SKILL_ROWS - 1)) / SKILL_ROWS,
+);
+const SKILL_STEP = SKILL_SIZE + SKILL_GAP;
+const skillCellX = (i: number) => ((i % SKILL_COLS) - (SKILL_COLS - 1) / 2) * SKILL_STEP;
+const skillCellY = (i: number) =>
+  ((SKILL_ROWS - 1) / 2 - Math.floor(i / SKILL_COLS)) * SKILL_STEP;
+
+/**
+ * The label lives in the gap above the grid — flush left with it, and nearer to
+ * it than to the card overhead. Measured from the grid's real top edge, which
+ * moves when the row count does.
+ */
+const SKILL_GRID_HALF_H = ((SKILL_ROWS - 1) / 2) * SKILL_STEP + SKILL_SIZE / 2;
+const SKILL_LABEL_X = -(((SKILL_COLS - 1) / 2) * SKILL_STEP + SKILL_SIZE / 2);
+const SKILL_LABEL_Y = SKILL_GRID_HALF_H + 0.20;
 
 const SKILL_MARKS: StackItem[] = skills.map((s, i) => ({
   id: `about-skill:${s.id}`,
   markId: s.id,
   color: brandFor(TECH_BRAND, s.id).color,
-  position: [TILE.skills.x + SKILL_X[i % 3], TILE.skills.y + SKILL_Y[Math.floor(i / 3)], 0.10],
+  position: [TILE.skills.x + skillCellX(i), TILE.skills.y + skillCellY(i), 0.10],
   size: SKILL_SIZE,
   ...PLATE,
 }));
@@ -349,6 +374,11 @@ export function AboutSection() {
         <TerminalText position={[CURRENT.left, CUR_ROWS[2], 0.06]} anchorX="left" fontSize={C.meta} color={PALETTE.textDim}>
           {jobRangeLabel(current)}
         </TerminalText>
+        {/*
+          The job's `blurb`: a short line written for this tile and rendered
+          nowhere else. It briefly held the tech stack instead, which was
+          accurate but read as inventory on a card that is otherwise all prose.
+        */}
         <TerminalText
           position={[CURRENT.left, CUR_ROWS[3] + C.body * 0.5, 0.06]}
           anchorX="left"
@@ -358,7 +388,7 @@ export function AboutSection() {
           maxWidth={CURRENT.width}
           color={PALETTE.text}
         >
-          {current.summary}
+          {CURRENT_BLURB}
         </TerminalText>
       </group>
 
@@ -396,11 +426,7 @@ export function AboutSection() {
         <Hotspot
           key={s.id}
           id={`about-skill:${s.id}`}
-          position={[
-            TILE.skills.x + SKILL_X[i % 3],
-            TILE.skills.y + SKILL_Y[Math.floor(i / 3)],
-            0.2,
-          ]}
+          position={[TILE.skills.x + skillCellX(i), TILE.skills.y + skillCellY(i), 0.2]}
           size={[SKILL_STEP - 0.10, SKILL_STEP - 0.10, 0.7]}
         />
       ))}

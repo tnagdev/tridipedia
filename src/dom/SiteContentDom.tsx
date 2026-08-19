@@ -1,5 +1,5 @@
 import {
-  content, profile, skills, experience, phases, projects, socials,
+  content, profile, skills, experience, projects, socials,
   yearsOfExperience, jobRangeLabel, jobDurationLabel, jobStart, jobEnd,
 } from '@/content/loadContent';
 
@@ -19,7 +19,7 @@ export function SiteContentDom({ variant }: { variant: 'sr' | 'visible' }) {
     <main className={cls} id="content">
       <header>
         <h1>
-          {profile.brand} — {profile.tagline}
+          {profile.brand}: {profile.tagline}
         </h1>
         <p>
           {profile.fullName ?? profile.name},{' '}
@@ -40,7 +40,7 @@ export function SiteContentDom({ variant }: { variant: 'sr' | 'visible' }) {
         <ul>
           {skills.map((s) => (
             <li key={s.id}>
-              <strong>{s.name}</strong> — {s.proficiency}% proficiency, {s.years} years
+              <strong>{s.name}</strong>: {s.proficiency}% proficiency, {s.years} years
               {s.blurb ? <>. {s.blurb}</> : null}
               {s.note ? <> {s.note}</> : null}
               {s.url ? (
@@ -61,35 +61,23 @@ export function SiteContentDom({ variant }: { variant: 'sr' | 'visible' }) {
         {experience.map((j) => (
           <article key={j.id}>
             <h3>
-              {j.role} — {j.company}
+              {j.role}, {j.company}
             </h3>
             <p>
               <time dateTime={jobStart(j).toISOString().slice(0, 10)}>{jobRangeLabel(j)}</time>
               {j.end === null && <span> (current)</span>} · {jobDurationLabel(j)} · {j.location}
             </p>
-            {j.highlights.length > 0 && (
-              <ul>
-                {j.highlights.map((h, i) => (
-                  <li key={i}>{h}</li>
-                ))}
-              </ul>
-            )}
+            {/*
+              The same story the 3D flight card types out, and the same stack
+              the dossier shows as chips. This section used to render a bullet
+              list that existed nowhere in the 3D world, so the two modes
+              described the same job differently.
+            */}
+            {j.story.map((s, i) => (
+              <p key={i}>{s}</p>
+            ))}
+            {j.tech.length > 0 && <p>Stack: {j.tech.join(', ')}</p>}
             <meta content={jobEnd(j).toISOString().slice(0, 10)} />
-          </article>
-        ))}
-      </section>
-
-      <section aria-labelledby="h-journey">
-        <h2 id="h-journey">Career journey</h2>
-        {phases.map((p) => (
-          <article key={p.id}>
-            <h3>
-              {p.title} <small>{p.yearsLabel}</small>
-            </h3>
-            <p>
-              <em>{p.subtitle}</em>
-            </p>
-            <p>{p.blurb}</p>
           </article>
         ))}
       </section>
@@ -103,7 +91,7 @@ export function SiteContentDom({ variant }: { variant: 'sr' | 'visible' }) {
           {projects.map((p) => (
             <li key={p.id}>
               {p.url ? <a href={p.url}>{p.title}</a> : <span>{p.title}</span>}
-              {p.summary ? ` — ${p.summary}` : null}
+              {p.summary ? `: ${p.summary}` : null}
               {p.tech.length > 0 && ` (${p.tech.join(', ')})`}
             </li>
           ))}
@@ -135,7 +123,7 @@ export function SiteContentDom({ variant }: { variant: 'sr' | 'visible' }) {
                 </a>
               ) : (
                 <span>
-                  {s.label} — not published yet
+                  {s.label}: not published yet
                 </span>
               )}
             </li>

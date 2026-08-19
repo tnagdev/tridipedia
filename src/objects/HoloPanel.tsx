@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { PALETTE } from '@/text/palette';
-import { cachedPlane } from './resources';
+import { commitUniforms, cachedPlane } from './resources';
 import { F } from '@/state/frameState';
 
 /**
@@ -468,6 +468,7 @@ export function HoloPanel({
             u.uAspect.value = width / height;
             u.uChamfer.value = (chamfer * 1.03) / height;
             u.uRadius.value = (radius * 1.03) / height;
+            commitUniforms(back);
           }}
         />
       )}
@@ -502,6 +503,7 @@ export function HoloPanel({
           (u.uBody.value as THREE.Color).set(bodyColor ?? t.body);
           (u.uEdge.value as THREE.Color).set(edgeColor ?? t.edge);
           (u.uAccent.value as THREE.Color).set(t.accent);
+          commitUniforms(mat);
         }}
       />
     </group>

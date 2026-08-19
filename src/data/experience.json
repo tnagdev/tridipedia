@@ -2,113 +2,69 @@
   "experience": [
     {
       "id": "aponiar",
-      "company": "Aponiar Solutions Pvt. Ltd.",
+      "company": "Aponiar Solutions Pvt Ltd",
       "role": "Software Engineer",
       "location": "Kolkata, West Bengal",
-      "start": "2018-02-07",
-      "end": "2020-07-07",
-      "highlights": [
-        "Built cross-platform mobile applications with Ionic and React Native.",
-        "Bridged web experiences to mobile across iOS and Android."
-      ],
-      "phase": "MOBILE MANIA",
-      "summary": "Cross-platform mobile engineering. Shipped Ionic and React Native apps that brought web products onto iOS and Android.",
+      "start": "2018-07-01",
+      "end": "2020-07-31",
       "tech": [
+        "Angular",
+        "React",
         "Ionic",
         "React Native",
-        "Angular",
         "JavaScript"
       ],
+      "blurb": "Four client projects in two years, shipping hybrid apps to both stores from one codebase.",
       "story": [
-        "Specialised in cross-platform mobile with Ionic and React Native, carrying web experiences onto devices that had no patience for a slow one.",
-        "Performance stopped being an abstraction here and became something users could feel."
+        "I joined my first job with a college friend and that is where I learned to code and build software. I was lucky to have two capable mentors, Indranil Mondal and Raju Bera, who taught me how to turn an idea into actual lines of code.",
+        "I started building mobile apps, worked with Ionic and React Native, and held an iOS device for the first time. I also used DSA to solve a graph problem and built a recursive file explorer. Getting it to work felt amazing. For the first time, I felt I could build almost anything."
       ],
       "logo": "/assets/companies/aponiar.svg",
-      "url": "https://example.com"
+      "url": null
     },
     {
       "id": "cbnits",
       "company": "CBNITS",
       "role": "Lead Frontend Developer",
       "location": "Kolkata, West Bengal",
-      "start": "2020-08-05",
-      "end": "2024-08-31",
-      "highlights": [
-        "Led frontend architecture across multiple product teams.",
-        "Expanded into full-stack work with Node.js, Express and MongoDB."
-      ],
-      "phase": "FULLSTACK MADNESS",
-      "summary": "Led frontend architecture across several product teams, then expanded into full-stack work with Node, Express and MongoDB.",
+      "start": "2020-08-01",
+      "end": "2024-09-30",
       "tech": [
+        "TypeScript",
         "React",
         "Node.js",
-        "Express",
-        "MongoDB",
-        "TypeScript"
+        "MariaDB",
+        "Docker"
       ],
+      "blurb": "Led frontend for enterprise security products, then took on more of the backend as I went.",
       "story": [
-        "Promoted to lead the frontend, owning architecture across multiple product teams — decisions that outlived me and had to be defensible.",
-        "Went down the stack into Node, Express and MongoDB, and came back up having stopped seeing the layers as separate systems."
+        "Four years on enterprise security software: Netskope, Swift Security, Zuellig Pharma. Around 500 tenants and 10k+ users, with hotfixes that had to land inside the SLA window along with whatever database migration came with them.",
+        "The move off Angular onto React ran module by module behind a micro-frontend setup, so nothing got rewritten twice. Test coverage went from 35% to 90% across several teams and production issues dropped by about 70%."
       ],
       "logo": "/assets/companies/cbnits.svg",
-      "url": "https://example.com"
+      "url": null
     },
     {
       "id": "nextzen",
-      "company": "NextZen Minds",
+      "company": "NextZen Minds Pvt Ltd",
       "role": "Technical Lead",
       "location": "Global Remote",
-      "start": "2024-08-10",
+      "start": "2024-10-01",
       "end": null,
-      "highlights": [
-        "Technical lead for frontend and creative engineering.",
-        "Interactive, animated interfaces and creative coding with Three.js."
-      ],
-      "phase": "GEEKY TECHLEAD",
-      "summary": "Technical lead for frontend and creative engineering — interactive, animated interfaces built with Three.js and custom shaders.",
       "tech": [
-        "Three.js",
-        "React",
-        "Next.js",
-        "GLSL",
-        "TypeScript"
+        "Node.js",
+        "Python",
+        "GCP",
+        "LLMs",
+        "RabbitMQ"
       ],
+      "blurb": "I spend most of my time coding, solving problems, and arguing with juniors about why not every problem needs a new library installed or a new AI tool.",
       "story": [
-        "Technical lead for frontend and creative engineering, working global remote on interactive, animated interfaces — the part of the craft I would do anyway, now the part I am paid for.",
-        "Three.js, shaders, and the conviction that a page can be an experience rather than a document."
+        "As a Tech Lead, I spend more time designing systems and figuring out how everything fits together then write code when everyone sleeps. I prompt my colleagues, they prompt systems, and then I review the generated mess.",
+        "Somehow the planning keeps getting longer while the coding keeps getting shorter. Then at 2 AM, I'm arguing with a machine that writes the code itself, wondering if I’m still the engineer or just the guy keeping the chaos together."
       ],
       "logo": "/assets/companies/nextzen.svg",
-      "url": "https://example.com"
-    }
-  ],
-  "phases": [
-    {
-      "id": "beginning",
-      "title": "The Beginning",
-      "subtitle": "Academy of Technology — B.Tech, Electrical Engineering",
-      "yearsLabel": "2014 — 2018",
-      "blurb": "I graduated with a degree in Electrical Engineering, but during college I stumbled upon coding and it instantly clicked. What started as curiosity soon became passion; every problem felt like a puzzle waiting to be solved. That love for problem-solving pulled me into software development, where I found the perfect mix of creativity and logic."
-    },
-    {
-      "id": "mobile",
-      "title": "Mobile Mania",
-      "subtitle": "Cross-platform, everywhere at once",
-      "yearsLabel": "2018 — 2020",
-      "blurb": "I dived deeper into development and specialised in cross-platform mobile apps. Using React Native and Ionic I built applications that brought web experiences to mobile, bridging the gap between the two worlds. This phase shaped how I think about performance, user experience and scalability across platforms."
-    },
-    {
-      "id": "fullstack",
-      "title": "FullStack Madness",
-      "subtitle": "Down the stack, and back up again",
-      "yearsLabel": "2020 — 2024",
-      "blurb": "Expanded into full-stack development. Started working with backend technologies, databases and API development while keeping frontend expertise sharp — the point where I stopped seeing the stack as separate layers."
-    },
-    {
-      "id": "techlead",
-      "title": "Geeky TechLead",
-      "subtitle": "Creative coding as a discipline",
-      "yearsLabel": "2024 — Present",
-      "blurb": "Passionate about creative coding, building interactive animations and delightful user interfaces. Always exploring new JS libraries and pushing the boundaries of what a web experience can be."
+      "url": null
     }
   ]
 }

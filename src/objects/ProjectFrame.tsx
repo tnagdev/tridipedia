@@ -3,7 +3,7 @@ import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { PALETTE } from '@/text/palette';
 import { buildGlyphAtlas, ATLAS_COLS, GLYPH_COUNT } from '@/rain/glyphAtlas';
-import { cachedPlane } from './resources';
+import { cachedPlane, commitUniforms } from './resources';
 import { F } from '@/state/frameState';
 
 const vertexShader = /* glsl */ `
@@ -17,8 +17,10 @@ const vertexShader = /* glsl */ `
 /**
  * The frame interior runs its own miniature rain in a different palette and
  * direction — you are looking through a window into another version of the
- * world. When real projects arrive, this interior swaps for a thumbnail and
- * the border, tags and hover behaviour are untouched.
+ * world. That was always the EMPTY state: `uInterior` fades it out when a real
+ * thumbnail is laid over the frame by <ProjectThumb />, leaving the border,
+ * tags and hover behaviour exactly as they are. Two layers of moving green
+ * behind a screenshot is one too many.
  */
 const fragmentShader = /* glsl */ `
   precision mediump float;
@@ -26,7 +28,7 @@ const fragmentShader = /* glsl */ `
 
   uniform highp sampler2D uAtlas;
   uniform highp float uAtlasCols;
-  uniform float uTime, uGlyphCount, uHover, uOpacity, uFlow, uSeed;
+  uniform float uTime, uGlyphCount, uHover, uOpacity, uFlow, uSeed, uInterior;
   uniform vec3 uColor, uBorder;
 
   float hash21(vec2 p) {
@@ -59,8 +61,9 @@ const fragmentShader = /* glsl */ `
     // Keep the interior inside the border.
     float inner = step(0.016, ex) * step(0.016, ey);
 
-    vec3 col = uColor * glyph * inner * (0.55 + uHover * 0.6) + uBorder * rim * (0.5 + uHover * 0.8);
-    float a = (glyph * inner * (0.55 + uHover * 0.6) + rim * (0.5 + uHover * 0.8)) * uOpacity;
+    float fill = glyph * inner * (0.55 + uHover * 0.6) * uInterior;
+    vec3 col = uColor * fill + uBorder * rim * (0.5 + uHover * 0.8);
+    float a = (fill + rim * (0.5 + uHover * 0.8)) * uOpacity;
     if (a < 0.003) discard;
     gl_FragColor = vec4(col, a);
   }
@@ -86,6 +89,7 @@ function getFrameMaterial() {
       uHover: { value: 0 },
       uOpacity: { value: 1 },
       uFlow: { value: 1 },
+      uInterior: { value: 1 },
       uSeed: { value: 0 },
       uColor: { value: new THREE.Color(PALETTE.rain) },
       uBorder: { value: new THREE.Color(PALETTE.accent) },
@@ -101,6 +105,7 @@ export function ProjectFrame({
   hover = 0,
   opacity = 1,
   seed = 0,
+  interior = 1,
   color = PALETTE.rain,
   ...rest
 }: {
@@ -110,6 +115,8 @@ export function ProjectFrame({
   hover?: number;
   opacity?: number;
   seed?: number;
+  /** 1 runs the miniature rain; 0 leaves the interior clear for a thumbnail. */
+  interior?: number;
   color?: string;
   [key: string]: unknown;
 }) {
@@ -137,9 +144,11 @@ export function ProjectFrame({
       raycast={() => null}
       onBeforeRender={() => {
         mat.uniforms.uOpacity.value = opacity;
+        mat.uniforms.uInterior.value = interior;
         mat.uniforms.uHover.value = hoverRef.current;
         mat.uniforms.uSeed.value = seed * 13.7;
         (mat.uniforms.uColor.value as THREE.Color).set(color);
+        commitUniforms(mat);
       }}
       {...rest}
     />

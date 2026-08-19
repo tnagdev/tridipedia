@@ -39,7 +39,7 @@ export function A11yLayer() {
         : []),
       ...skills.map((s, i) => ({
         id: `skill:${s.id}`,
-        label: `${s.name} — ${s.proficiency}% proficiency, ${s.years} years`,
+        label: `${s.name}: ${s.proficiency}% proficiency, ${s.years} years`,
         href: s.url ?? undefined,
         progress: spread('skills', i, skills.length),
       })),
@@ -50,13 +50,13 @@ export function A11yLayer() {
       })),
       ...projects.map((p, i) => ({
         id: `project:${p.id}`,
-        label: p.placeholder ? `${p.title} — not published yet` : p.title,
+        label: p.placeholder ? `${p.title}: not published yet` : p.title,
         href: p.url ?? undefined,
         progress: spread('projects', i, projects.length),
       })),
       ...socials.map((s, i) => ({
         id: `social:${s.id}`,
-        label: s.url ? `${s.label} profile` : `${s.label} — not published yet`,
+        label: s.url ? `${s.label} profile` : `${s.label}: not published yet`,
         href: s.url ?? undefined,
         progress: spread('contact', i, socials.length),
       })),

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { commitUniforms } from './resources';
 import { QUAD_POSITIONS, QUAD_UVS } from '@/rain/quad';
 import { buildGlyphAtlas, glyphIndexOf, ATLAS_COLS } from '@/rain/glyphAtlas';
 import { F } from '@/state/frameState';
@@ -275,6 +276,7 @@ export function VolumeText({
         u.uSlices.value = Math.max(1, Math.round(slices));
         (u.uColor.value as THREE.Color).set(color);
         (u.uHeadColor.value as THREE.Color).set(headColor);
+        commitUniforms(mat);
       }}
     />
   );

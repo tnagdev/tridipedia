@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { commitUniforms } from './resources';
 import { QUAD_POSITIONS, QUAD_UVS } from '@/rain/quad';
 import { buildMarkAtlas, type MarkAtlas } from './markAtlas';
 import { F } from '@/state/frameState';
@@ -12,8 +13,8 @@ import { damp } from '@/utils/damp';
  * A mark here is not a sticker, it is an assembly. At rest the plates sit a
  * hair apart so the thing reads as hardware; on hover they separate along the
  * view axis and fan sideways, the way you lift the layers off a piece of
- * equipment. The top plate carries the logo, the ones beneath carry the guts —
- * an etched trace and a via — so there is something to see once they part.
+ * equipment. Only the TOP plate carries the logo; the ones beneath are blank,
+ * and their rim, depth fade and fan are what make the stack read as a stack.
  *
  * WHY THIS EXISTS RATHER THAN A SECOND <MarkTiles />
  * MarkTiles keeps size, opacity and gauge in UNIFORMS on a module-level
@@ -157,13 +158,16 @@ void main() {
   vec2 auv = vCellOrigin + vec2(luv.x, luv.y) / uCols;
   float logo = texture(uAtlas, auv).a * inside * vTop;
 
-  // --- the guts, on every plate BELOW the top one ---
-  // Keyed to the plate's own depth, so no two look alike once they part.
+  // The lower plates carry NO detail of their own.
+  //
+  // They used to draw "guts": a pair of horizontal traces and a small round
+  // via, circuit-board style, keyed to each plate's depth. The plates are
+  // additively blended and deliberately transparent to each other, so all of
+  // that showed THROUGH the top plate — every mark sat behind a couple of
+  // stray horizontal lines and a dot, which read as artefacts on the logo
+  // rather than as machining underneath it. The stack still reads as an
+  // assembly from its rim, its depth fade and the way it peels.
   float lower = 1.0 - vTop;
-  float traceY = 0.18 + vLayerT * 0.34;
-  float trace = (1.0 - smoothstep(0.012, 0.030, abs(abs(p.y) - traceY))) * face;
-  float via = 1.0 - smoothstep(0.050, 0.075, length(p - vec2(0.34, -0.28)));
-  float guts = (trace * 0.45 + via * 0.80) * lower;
 
   // A closed stack still has a front and a back.
   float depthFade = mix(0.34, 1.0, vLayerT);
@@ -172,11 +176,11 @@ void main() {
   float scan = 0.94 + 0.06 * sin(vUv.y * 26.0 - uTime * 1.6 + vPhase * 6.283);
 
   float intensity = (0.55 + hover * 0.65 + split) * depthFade * scan;
-  float a = (rim * 0.95 + guts + logo * 1.25 + face * 0.06) * intensity * opacity;
+  float a = (rim * 0.95 + logo * 1.25 + face * 0.06) * intensity * opacity;
   if (a < 0.004) discard;
 
   // The mark burns brighter than its plate so it stays legible under bloom.
-  vec3 col = vColor * (rim * 0.9 + guts + face * 0.06)
+  vec3 col = vColor * (rim * 0.9 + face * 0.06)
            + mix(vColor, vec3(1.0), 0.5) * logo;
   fragColor = vec4(col * intensity * opacity, a);
 }
@@ -360,6 +364,7 @@ export function MarkStack({
         // atlas for BOTH, and two sections are on screen together at 0.30-0.42.
         mat.uniforms.uAtlas.value = atlas.texture;
         mat.uniforms.uCols.value = atlas.cols;
+        commitUniforms(mat);
       }}
     />
   );

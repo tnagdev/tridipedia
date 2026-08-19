@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { PALETTE } from '@/text/palette';
-import { cachedGeometry } from './resources';
+import { cachedGeometry, commitUniforms } from './resources';
 import { F } from '@/state/frameState';
 
 /**
@@ -167,6 +167,7 @@ export function Conduit({
         mat.uniforms.uPulses.value = pulses;
         mat.uniforms.uSpeed.value = speed;
         (mat.uniforms.uColor.value as THREE.Color).set(color);
+        commitUniforms(mat);
       }}
     />
   );

@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { PALETTE } from '@/text/palette';
-import { cachedPlane } from './resources';
+import { cachedPlane, commitUniforms } from './resources';
 import { F } from '@/state/frameState';
 
 const vertexShader = /* glsl */ `
@@ -104,6 +104,7 @@ export function JobMonolith({
       onBeforeRender={() => {
         mat.uniforms.uOpacity.value = opacity;
         mat.uniforms.uOpenEnded.value = current ? 1 : 0;
+        commitUniforms(mat);
       }}
     />
   );

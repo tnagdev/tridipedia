@@ -18,6 +18,8 @@ export interface UiState {
   openCard: string | null;
   /** id of the deployed skill re-spelling the rain, or null. Changes only on click. */
   skillId: string | null;
+  /** id of the project whose dossier popup is open, or null. Changes only on click. */
+  projectId: string | null;
 }
 
 let state: UiState = {
@@ -29,6 +31,7 @@ let state: UiState = {
   section: 0,
   openCard: null,
   skillId: null,
+  projectId: null,
 };
 
 const listeners = new Set<() => void>();

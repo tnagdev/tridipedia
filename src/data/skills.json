@@ -3,7 +3,7 @@
     {
       "id": "typescript",
       "name": "TypeScript",
-      "proficiency": 92,
+      "proficiency": 85,
       "years": 6,
       "color": "#4C97E8",
       "blurb": "JavaScript with a structural type system. The compiler catches the class of bug that otherwise turns up in production at 2am, and the types double as documentation that cannot go stale.",
@@ -25,7 +25,7 @@
     {
       "id": "python",
       "name": "Python",
-      "proficiency": 88,
+      "proficiency": 80,
       "years": 4,
       "color": "#4B8BBE",
       "blurb": "The default runtime for anything touching a model. With FastAPI and async it is quick enough for real services, which is where the model-facing half of my systems lives.",
@@ -36,7 +36,7 @@
     {
       "id": "nestjs",
       "name": "NestJS",
-      "proficiency": 86,
+      "proficiency": 75,
       "years": 3,
       "color": "#E0234E",
       "blurb": "An opinionated Node framework with real dependency injection and module boundaries. The structure still makes sense when the third engineer joins the codebase.",
@@ -47,8 +47,8 @@
     {
       "id": "postgres",
       "name": "PostgreSQL",
-      "proficiency": 85,
-      "years": 5,
+      "proficiency": 80,
+      "years": 4,
       "color": "#6BA6DE",
       "blurb": "The relational database that usually turns out to be the right answer. Transactions you can trust, JSONB while the schema is still moving, and pgvector when you need similarity search.",
       "url": "https://www.postgresql.org",
@@ -58,8 +58,8 @@
     {
       "id": "redis",
       "name": "Redis",
-      "proficiency": 82,
-      "years": 4,
+      "proficiency": 70,
+      "years": 3,
       "color": "#FF4438",
       "blurb": "An in-memory store used as cache, lock, rate limiter and queue. The cheapest way to take load off a database that has started to struggle under read traffic.",
       "url": "https://redis.io",
@@ -70,7 +70,7 @@
       "id": "rabbitmq",
       "name": "RabbitMQ",
       "proficiency": 80,
-      "years": 3,
+      "years": 2,
       "color": "#FF7A2F",
       "blurb": "A message broker that decouples the request from the work behind it. Anything slow, flaky or expensive goes behind a queue, and calls out to a model are all three at once.",
       "url": "https://www.rabbitmq.com",
@@ -80,8 +80,8 @@
     {
       "id": "docker",
       "name": "Docker",
-      "proficiency": 82,
-      "years": 5,
+      "proficiency": 85,
+      "years": 4,
       "color": "#2496ED",
       "blurb": "Containers, so the same image runs on my laptop, in CI and in production. Unglamorous work, and the reason a deploy stopped being an event anyone had to watch.",
       "url": "https://www.docker.com",
@@ -91,7 +91,7 @@
     {
       "id": "llm",
       "name": "LLM & RAG",
-      "proficiency": 87,
+      "proficiency": 80,
       "years": 2,
       "color": "#19C39A",
       "blurb": "Retrieval-augmented generation, agent orchestration, model routing and evals. The engineering around the model, which is where most of the actual work turns out to be.",
@@ -102,8 +102,8 @@
     {
       "id": "gcp",
       "name": "Google Cloud Platform",
-      "proficiency": 80,
-      "years": 3,
+      "proficiency": 90,
+      "years": 5,
       "color": "#4285F4",
       "blurb": "Google Cloud Platform. The cloud provider I have the most experience with, and the one that has the best managed services for AI pipelines.",
       "url": "https://cloud.google.com",
@@ -113,7 +113,7 @@
     {
       "id": "react",
       "name": "React",
-      "proficiency": 85,
+      "proficiency": 90,
       "years": 6,
       "color": "#61DAFB",
       "blurb": "A component-based frontend library. The right tool for the job when the UI is complex, and the wrong one when it is not.",
@@ -124,7 +124,7 @@
     {
       "id": "angular",
       "name": "Angular",
-      "proficiency": 80,
+      "proficiency": 85,
       "years": 4,
       "color": "#DD0031",
       "blurb": "A component-based frontend framework. The right tool for the job when the UI is complex, and the wrong one when it is not.",
@@ -135,7 +135,7 @@
     {
       "id": "nextjs",
       "name": "Next.js",
-      "proficiency": 80,
+      "proficiency": 85,
       "years": 4,
       "color": "#E8F4FF",
       "blurb": "A React framework with server-side rendering, static generation and API routes. The right tool for the job when the UI is complex, and the wrong one when it is not.",
@@ -146,7 +146,7 @@
     {
       "id": "github",
       "name": "GitHub",
-      "proficiency": 85,
+      "proficiency": 90,
       "years": 5,
       "color": "#E6EDF3",
       "blurb": "A web-based Git repository hosting service. The go-to place for version control and collaboration.",
@@ -179,7 +179,7 @@
     {
       "id": "javascript",
       "name": "JavaScript",
-      "proficiency": 92,
+      "proficiency": 95,
       "years": 7,
       "color": "#F7DF1E",
       "blurb": "A high-level, often just-in-time compiled, and multi-paradigm programming language. The language of the web.",
@@ -201,8 +201,8 @@
     {
       "id": "firebase",
       "name": "Firebase",
-      "proficiency": 75,
-      "years": 3,
+      "proficiency": 85,
+      "years": 4,
       "color": "#FFCA28",
       "blurb": "A platform developed by Google for creating mobile and web applications. It provides a real-time database and backend as a service.",
       "url": "https://firebase.google.com",

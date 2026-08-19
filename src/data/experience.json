@@ -1,0 +1,70 @@
+{
+  "experience": [
+    {
+      "id": "aponiar",
+      "company": "Aponiar Solutions Pvt Ltd",
+      "role": "Software Engineer",
+      "location": "Kolkata, West Bengal",
+      "start": "2018-07-01",
+      "end": "2020-07-31",
+      "tech": [
+        "Angular",
+        "React",
+        "Ionic",
+        "React Native",
+        "JavaScript"
+      ],
+      "blurb": "Four client projects in two years, shipping hybrid apps to both stores from one codebase.",
+      "story": [
+        "I joined my first job with a college friend and that is where I learned to code and build software. I was lucky to have two capable mentors, Indranil Mondal and Raju Bera, who taught me how to turn an idea into actual lines of code.",
+        "I started building mobile apps, worked with Ionic and React Native, and held an iOS device for the first time. I also used DSA to solve a graph problem and built a recursive file explorer. Getting it to work felt amazing. For the first time, I felt I could build almost anything."
+      ],
+      "logo": "/assets/companies/aponiar.svg",
+      "url": null
+    },
+    {
+      "id": "cbnits",
+      "company": "CBNITS",
+      "role": "Lead Frontend Developer",
+      "location": "Kolkata, West Bengal",
+      "start": "2020-08-01",
+      "end": "2024-09-30",
+      "tech": [
+        "TypeScript",
+        "React",
+        "Node.js",
+        "MariaDB",
+        "Docker"
+      ],
+      "blurb": "Led frontend for enterprise security products, then took on more of the backend as I went.",
+      "story": [
+        "Four years on enterprise security software: Netskope, Swift Security, Zuellig Pharma. Around 500 tenants and 10k+ users, with hotfixes that had to land inside the SLA window along with whatever database migration came with them.",
+        "The move off Angular onto React ran module by module behind a micro-frontend setup, so nothing got rewritten twice. Test coverage went from 35% to 90% across several teams and production issues dropped by about 70%."
+      ],
+      "logo": "/assets/companies/cbnits.svg",
+      "url": null
+    },
+    {
+      "id": "nextzen",
+      "company": "NextZen Minds Pvt Ltd",
+      "role": "Technical Lead",
+      "location": "Global Remote",
+      "start": "2024-10-01",
+      "end": null,
+      "tech": [
+        "Node.js",
+        "Python",
+        "GCP",
+        "LLMs",
+        "RabbitMQ"
+      ],
+      "blurb": "I spend most of my time coding, solving problems, and arguing with juniors about why not every problem needs a new library installed or a new AI tool.",
+      "story": [
+        "As a Tech Lead, I spend more time designing systems and figuring out how everything fits together then write code when everyone sleeps. I prompt my colleagues, they prompt systems, and then I review the generated mess.",
+        "Somehow the planning keeps getting longer while the coding keeps getting shorter. Then at 2 AM, I'm arguing with a machine that writes the code itself, wondering if I’m still the engineer or just the guy keeping the chaos together."
+      ],
+      "logo": "/assets/companies/nextzen.svg",
+      "url": null
+    }
+  ]
+}

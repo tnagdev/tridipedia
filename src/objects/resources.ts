@@ -1,0 +1,94 @@
+import { useEffect, useMemo } from 'react';
+import * as THREE from 'three';
+
+/**
+ * GPU resource discipline.
+ *
+ * Sections mount and unmount as you scroll, so anything allocated in a
+ * component's useMemo is re-allocated on every re-entry. Without disposal that
+ * leaks GPU buffers on every pass through the journey — measured at ~30
+ * geometries per cycle, which is exactly the "fine at first, worse over time"
+ * failure mode.
+ *
+ * Two rules:
+ *   1. Shared, parameterless resources are module-level singletons (see
+ *      RainMaterial) — created once, never disposed, so the renderer's
+ *      program cache keeps their compiled shaders alive across mount cycles.
+ *   2. Anything parameterised goes through the cache or useDisposable below.
+ */
+
+/** Geometry cache keyed by shape+dimensions, so repeat mounts reuse buffers. */
+const geometryCache = new Map<string, THREE.BufferGeometry>();
+
+export function cachedPlane(width: number, height: number, wSeg = 1, hSeg = 1): THREE.PlaneGeometry {
+  const key = `plane:${width}:${height}:${wSeg}:${hSeg}`;
+  let g = geometryCache.get(key) as THREE.PlaneGeometry | undefined;
+  if (!g) {
+    g = new THREE.PlaneGeometry(width, height, wSeg, hSeg);
+    geometryCache.set(key, g);
+  }
+  return g;
+}
+
+export function cachedBoxEdges(w: number, h: number, d: number): THREE.EdgesGeometry {
+  const key = `boxedges:${w}:${h}:${d}`;
+  let g = geometryCache.get(key) as THREE.EdgesGeometry | undefined;
+  if (!g) {
+    g = new THREE.EdgesGeometry(new THREE.BoxGeometry(w, h, d));
+    geometryCache.set(key, g);
+  }
+  return g;
+}
+
+export function cachedGeometry<T extends THREE.BufferGeometry>(key: string, make: () => T): T {
+  let g = geometryCache.get(key) as T | undefined;
+  if (!g) {
+    g = make();
+    geometryCache.set(key, g);
+  }
+  return g;
+}
+
+export function geometryCacheSize() {
+  return geometryCache.size;
+}
+
+/**
+ * For genuinely per-instance resources that cannot be cached: creates on mount
+ * and disposes on unmount.
+ */
+export function useDisposable<T extends { dispose(): void }>(factory: () => T, deps: unknown[]): T {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const value = useMemo(factory, deps);
+  useEffect(() => () => value.dispose(), [value]);
+  return value;
+}
+
+/**
+ * Commit per-draw uniform changes on a SHARED material.
+ *
+ * Call this as the LAST thing in an `onBeforeRender` that writes uniforms.
+ *
+ * Every custom material in here is a module-level singleton, and per-instance
+ * values are pushed at draw time so that N objects still cost one compiled
+ * program. That contract has a hole in it, and it is silent: three only
+ * re-uploads a material's uniforms when the material CHANGES between draws
+ * (`refreshMaterial || _currentMaterial !== material` in WebGLRenderer's
+ * setProgram). Draw three project frames back to back and the second and third
+ * render with the FIRST one's uniforms — same colour, same seed, same texture.
+ *
+ * Worse, it is intermittent rather than broken: as soon as some other material
+ * is drawn in between, the next draw does refresh, so the symptom is objects
+ * flickering between each other's values as scene order shifts frame to frame.
+ * It went unnoticed for as long as it did because most of these components only
+ * ever had one instance on screen at a time.
+ *
+ * `uniformsNeedUpdate` is the documented escape hatch and is checked separately
+ * from the material-changed test, so it forces the upload. Verified against
+ * three 172 with two meshes sharing one material: without it both drew the
+ * first mesh's colour, with it each drew its own. Bumping `material.version`
+ * instead does NOT work — that path is short-circuited by the same test.
+ */
+export function commitUniforms(material: THREE.Material): void {
+  (material as THREE.ShaderMaterial).uniformsNeedUpdate = true;
+}

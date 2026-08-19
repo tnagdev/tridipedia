@@ -1,0 +1,442 @@
+{
+  "meta": {
+    "url": "https://tridipedia.web.app",
+    "title": "Tridipedia: Journey of a Developer",
+    "description": "Tridibesh Nag, Technical Lead at Next Zen Minds. Backend and AI systems: LLM pipelines, RAG and multi-tenant security platforms. A portfolio rendered as a journey through three-dimensional digital rain.",
+    "ogImage": "/og/og-cover.jpg"
+  },
+  "profile": {
+    "brand": "Tridipedia",
+    "tagline": "Journey of a Developer",
+    "name": "Tridibesh",
+    "fullName": "Tridibesh Nag",
+    "designation": "Senior Full Stack AI Engineer",
+    "title": "Talking to machines long before they learned to talk back.",
+    "handle": "@tridibesh",
+    "roles": [
+      "Backend",
+      "Full-Stack",
+      "Platform",
+      "API",
+      "AI Systems"
+    ],
+    "codingSince": 2018,
+    "location": "India",
+    "bio": "Software engineer and tech lead with 8+ years of experience building things across the stack - JavaScript, React, Node.js, Python, and more.\n\nI enjoy turning messy problems into clean, scalable software, digging into architecture and performance, and now mostly arguing with an AI at 2 AM.\n\nLately, I've been exploring the intersection of software engineering and AI — RAG, LLMs, agents, embeddings, and multimodal systems.",
+    "avatar": "/assets/profile/avatar.jpg"
+  },
+  "email": "tnag97@gmail.com",
+  "phone": "+917908418696",
+  "rainDefaults": {
+    "speed": 1,
+    "density": 1,
+    "glyphSize": 0.55,
+    "intensity": 1,
+    "flowDir": [
+      0,
+      -1,
+      0
+    ],
+    "tint": 0,
+    "lock": 0,
+    "open": 0,
+    "converge": 0,
+    "billboardLock": 0,
+    "convergePoint": [
+      0,
+      40,
+      -350
+    ],
+    "tailColor": "#00d93f",
+    "headColor": "#d8ffe4"
+  },
+  "journey": {
+    "scrollHeightVh": 1400,
+    "damping": 4.2,
+    "lookAhead": 0.012,
+    "curveTension": 0.5,
+    "keyframes": [
+      {
+        "t": 0,
+        "pos": [
+          0,
+          2,
+          22
+        ],
+        "look": [
+          0,
+          2,
+          0
+        ],
+        "fov": 72,
+        "roll": 0.02
+      },
+      {
+        "t": 0.08,
+        "pos": [
+          0,
+          2,
+          10
+        ],
+        "look": [
+          0,
+          2,
+          -12
+        ],
+        "fov": 70,
+        "roll": 0.01
+      },
+      {
+        "t": 0.16,
+        "pos": [
+          0,
+          1.5,
+          -4
+        ],
+        "look": [
+          0,
+          1.5,
+          -26
+        ],
+        "fov": 66,
+        "roll": 0
+      },
+      {
+        "t": 0.235,
+        "pos": [
+          0.6,
+          1.2,
+          -29.6
+        ],
+        "look": [
+          0.6,
+          1.2,
+          -41.2
+        ],
+        "fov": 60,
+        "roll": -0.01
+      },
+      {
+        "t": 0.285,
+        "pos": [
+          0.6,
+          1.2,
+          -30.6
+        ],
+        "look": [
+          0.6,
+          1.2,
+          -41.2
+        ],
+        "fov": 60,
+        "roll": 0
+      },
+      {
+        "t": 0.36,
+        "pos": [
+          -3,
+          1.5,
+          -48
+        ],
+        "look": [
+          1,
+          2,
+          -68
+        ],
+        "fov": 62,
+        "roll": 0.02
+      },
+      {
+        "t": 0.44,
+        "pos": [
+          7,
+          3,
+          -76
+        ],
+        "look": [
+          -5,
+          4,
+          -96
+        ],
+        "fov": 55,
+        "roll": 0.1
+      },
+      {
+        "t": 0.51,
+        "pos": [
+          -8,
+          4,
+          -104
+        ],
+        "look": [
+          7,
+          4,
+          -124
+        ],
+        "fov": 55,
+        "roll": -0.1
+      },
+      {
+        "t": 0.58,
+        "pos": [
+          4,
+          3,
+          -132
+        ],
+        "look": [
+          0,
+          2,
+          -154
+        ],
+        "fov": 58,
+        "roll": 0.06
+      },
+      {
+        "t": 0.65,
+        "pos": [
+          0,
+          -1,
+          -162
+        ],
+        "look": [
+          0,
+          -0.5,
+          -188
+        ],
+        "fov": 70,
+        "roll": 0.03
+      },
+      {
+        "t": 0.72,
+        "pos": [
+          0,
+          -2,
+          -202
+        ],
+        "look": [
+          0,
+          -1,
+          -230
+        ],
+        "fov": 78,
+        "roll": -0.04
+      },
+      {
+        "t": 0.78,
+        "pos": [
+          0,
+          0.5,
+          -242
+        ],
+        "look": [
+          0,
+          1.5,
+          -268
+        ],
+        "fov": 68,
+        "roll": 0
+      },
+      {
+        "t": 0.84,
+        "pos": [
+          -11,
+          2,
+          -278
+        ],
+        "look": [
+          5,
+          2,
+          -294
+        ],
+        "fov": 60,
+        "roll": 0.02
+      },
+      {
+        "t": 0.9,
+        "pos": [
+          11,
+          2,
+          -302
+        ],
+        "look": [
+          -2,
+          3,
+          -322
+        ],
+        "fov": 62,
+        "roll": -0.02
+      },
+      {
+        "t": 0.96,
+        "pos": [
+          0,
+          4,
+          -332
+        ],
+        "look": [
+          0,
+          20,
+          -346
+        ],
+        "fov": 70,
+        "roll": 0
+      },
+      {
+        "t": 1,
+        "pos": [
+          0,
+          7,
+          -346
+        ],
+        "look": [
+          0,
+          34,
+          -354
+        ],
+        "fov": 74,
+        "roll": 0
+      }
+    ]
+  },
+  "sections": [
+    {
+      "id": "hero",
+      "label": "Home",
+      "range": [
+        0,
+        0.16
+      ],
+      "rain": {
+        "speed": 0.55,
+        "density": 1,
+        "glyphSize": 0.58,
+        "intensity": 1
+      },
+      "textZones": [
+        [
+          0,
+          2,
+          -6,
+          7
+        ]
+      ]
+    },
+    {
+      "id": "about",
+      "label": "About",
+      "range": [
+        0.16,
+        0.36
+      ],
+      "rain": {
+        "speed": 0.8,
+        "density": 0.7,
+        "glyphSize": 0.5,
+        "open": 1,
+        "intensity": 0.9
+      },
+      "textZones": [
+        [
+          0.6,
+          1.2,
+          -41,
+          11
+        ]
+      ]
+    },
+    {
+      "id": "skills",
+      "label": "Skills",
+      "range": [
+        0.36,
+        0.58
+      ],
+      "rain": {
+        "speed": 1.3,
+        "density": 1,
+        "glyphSize": 0.5,
+        "tint": 1,
+        "lock": 1,
+        "billboardLock": 0.85,
+        "intensity": 1.15
+      },
+      "textZones": []
+    },
+    {
+      "id": "experience",
+      "label": "Experience",
+      "range": [
+        0.58,
+        0.78
+      ],
+      "rain": {
+        "speed": 1.8,
+        "density": 0.95,
+        "glyphSize": 0.36,
+        "flowDir": [
+          0,
+          0,
+          -1
+        ],
+        "intensity": 1.05
+      },
+      "textZones": []
+    },
+    {
+      "id": "projects",
+      "label": "Projects",
+      "range": [
+        0.78,
+        0.9
+      ],
+      "rain": {
+        "speed": 0.45,
+        "density": 0.22,
+        "glyphSize": 0.8,
+        "intensity": 0.75
+      },
+      "textZones": [
+        [
+          0,
+          2,
+          -292,
+          10
+        ]
+      ]
+    },
+    {
+      "id": "contact",
+      "label": "Contact",
+      "range": [
+        0.9,
+        1
+      ],
+      "rain": {
+        "speed": 2.2,
+        "density": 1,
+        "glyphSize": 0.5,
+        "flowDir": [
+          0,
+          1,
+          0
+        ],
+        "converge": 1,
+        "convergePoint": [
+          0,
+          58,
+          -366
+        ],
+        "intensity": 1.3,
+        "headColor": "#ffffff"
+      },
+      "textZones": [
+        [
+          0,
+          20.5,
+          -350.5,
+          12
+        ]
+      ]
+    }
+  ]
+}

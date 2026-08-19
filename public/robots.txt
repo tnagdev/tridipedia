@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /bench.html
+
+Sitemap: https://tridipedia.web.app/sitemap.xml

@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#000804" />
+    <title>Tridipedia: Journey of a Developer</title>
+    <meta name="description" content="Tridibesh Nag, Technical Lead at Next Zen Minds. Backend and AI systems: LLM pipelines, RAG and multi-tenant security platforms. A portfolio rendered as a journey through three-dimensional digital rain." />
+    <link rel="canonical" href="https://tridipedia.web.app/" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23000804'/%3E%3Ctext x='16' y='23' font-family='monospace' font-size='22' font-weight='700' fill='%2300d93f' text-anchor='middle'%3ET%3C/text%3E%3C/svg%3E" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Tridipedia: Journey of a Developer" />
+    <meta property="og:description" content="Tridibesh Nag, Technical Lead at Next Zen Minds. Backend and AI systems: LLM pipelines, RAG and multi-tenant security platforms. A portfolio rendered as a journey through three-dimensional digital rain." />
+    <meta property="og:url" content="https://tridipedia.web.app/" />
+    <meta property="og:image" content="https://tridipedia.web.app/og/og-cover.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Tridipedia: Journey of a Developer" />
+    <meta name="twitter:description" content="Backend &amp; AI systems engineer. A journey through digital rain." />
+    <meta name="twitter:image" content="https://tridipedia.web.app/og/og-cover.jpg" />
+
+    <!-- Loader is inlined so it paints before three.js is even parsed. -->
+    <style>
+      :root { --rain: #00d93f; --bg: #000804; }
+      html, body { margin: 0; padding: 0; background: var(--bg); }
+      #loader {
+        position: fixed; inset: 0; z-index: 9999;
+        display: flex; flex-direction: column; gap: 14px;
+        align-items: center; justify-content: center;
+        background: var(--bg); color: var(--rain);
+        font-family: ui-monospace, "Cascadia Mono", "Courier New", monospace;
+        font-size: 14px; letter-spacing: 0.18em;
+        text-shadow: 0 0 6px rgba(0,217,63,.45), 0 0 18px rgba(0,217,63,.2);
+        transition: opacity .45s ease;
+        pointer-events: none;
+      }
+      #loader.done { opacity: 0; }
+      #loader .ascii { display: flex; font-size: 17px; font-weight: 700; }
+      #loader .ascii i { font-style: normal; width: 11px; text-align: center; }
+      #loader .ascii i::after { content: '-'; animation: asciiwave .72s steps(1) infinite; }
+      @keyframes asciiwave {
+        0%   { content: '-'; }  12% { content: '='; }
+        25%  { content: '\2261'; } 37% { content: '\2263'; }
+        50%  { content: '\2588'; } 62% { content: '\2263'; }
+        75%  { content: '\2261'; } 87% { content: '='; }
+        100% { content: '-'; }
+      }
+      #loader .msg { opacity: .55; font-size: 11px; }
+      @media (prefers-reduced-motion: reduce) {
+        #loader .ascii i::after { animation: none; content: '\2588'; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="loader" role="status" aria-live="polite">
+      <div class="ascii" aria-hidden="true"></div>
+      <div class="pct" id="loader-pct">[          ] 00%</div>
+      <div class="msg">INITIALISING TRIDIPEDIA</div>
+    </div>
+    <noscript>
+      <div style="position:relative;z-index:100;padding:28px 20px;color:#00d93f;background:#000804;font:14px/1.6 ui-monospace,monospace;max-width:74ch;margin:0 auto">
+        <h1 style="font-size:17px;letter-spacing:.12em;color:#b6ffd0">Tridipedia: Journey of a Developer</h1>
+        <p>Tridibesh Nag, Technical Lead at Next Zen Minds. Backend and AI systems engineer based in India.</p>
+        <p>This site renders an interactive 3D experience with JavaScript. Enable JavaScript for the full version; all content is also available in its built-in text mode.</p>
+      </div>
+    </noscript>
+    <div id="root"></div>
+    <script>
+      // Build the wave bars with staggered delays, no framework needed.
+      (function () {
+        var w = document.querySelector('#loader .ascii');
+        for (var i = 0; i < 12; i++) {
+          var el = document.createElement('i');
+          el.style.animationDelay = (i * -0.06) + 's';
+          w.appendChild(el);
+        }
+      })();
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

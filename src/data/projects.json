@@ -1,0 +1,58 @@
+{
+  "projects": [
+    {
+      "id": "hawkshield",
+      "title": "Hawk Shield AI",
+      "summary": "A multi-tenant cloud security platform covering data posture, email protection and browser agents, with LLM classifiers deciding what is allowed to leave the organisation.",
+      "details": "An AI-enabled cloud security platform covering data posture, email security for Gmail and Outlook, and browser-side monitoring. I architected it and led delivery across seven engineers. The interesting work was rarely the model calls: two-way encryption for email bodies and attachments, access revocation after send, watermarking, and DLP enforcement that has to reach the same verdict for every tenant every time. LLM classification runs behind queues with cost ceilings and provider fallbacks, because a security control that stalls when a provider is slow has stopped being one.",
+      "tech": [
+        "Node.js",
+        "LLMs",
+        "GCP",
+        "React"
+      ],
+      "role": "Architecture and technical lead",
+      "year": "2024-Present",
+      "thumbnail": "/assets/projects/hawkshield.png",
+      "url": "https://hawkshield.ai",
+      "repo": null,
+      "placeholder": false
+    },
+    {
+      "id": "filorag",
+      "title": "FiloRag",
+      "summary": "A personal build. A video RAG platform that answers questions about a video and jumps you to the second where the answer actually is.",
+      "details": "A video RAG platform, built end to end on my own time. Video goes in, gets scene-detected, transcribed with Whisper, then chunked and embedded. A vector index narrows a question down to the handful of segments that answer it, and the model may only speak from what comes back. The payoff is the timestamp jump: you ask something and land on the exact second instead of scrubbing. Ingestion runs async through RabbitMQ because transcription is slow. Most of the effort went into retrieval quality and grounding, since it is far easier to make a model sound confident than correct.",
+      "tech": [
+        "FastAPI",
+        "NestJS",
+        "ChromaDB",
+        "Whisper"
+      ],
+      "role": "Design, backend and pipelines",
+      "year": "2025",
+      "thumbnail": "/assets/projects/filorag.png",
+      "url": "https://filorag.com",
+      "repo": null,
+      "placeholder": false
+    },
+    {
+      "id": "nagent",
+      "title": "Nagent AI",
+      "summary": "A GenAI content platform whose pipeline engine orchestrates text, image and video models into social posts, business plans, pitch decks and ad videos.",
+      "details": "A generative content platform on GCP where a few lines of input come out as social posts, a business plan, a pitch deck or an ad video. I worked the backend, and the design problem was generalisation: each output is a different sequence of different models, so rather than script every flow I built a multi-stage pipeline engine where a stage is a unit of work and a flow is configuration. Under it sits a common model connector interface, so adding a provider is an implementation rather than a refactor. Text, image and video all run on the same rails.",
+      "tech": [
+        "Express",
+        "MySQL",
+        "GCP",
+        "Model Garden"
+      ],
+      "role": "Backend engineer",
+      "year": "2025",
+      "thumbnail": "/assets/projects/nagent.png",
+      "url": "https://nagent.ai",
+      "repo": null,
+      "placeholder": false
+    }
+  ]
+}

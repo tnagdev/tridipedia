@@ -36,8 +36,9 @@ export interface TierSpec {
  * text and wireframes, and 4x costs full-resolution multisample bandwidth on
  * integrated GPUs for a difference that is invisible here.
  *
- * DPR is capped at 1.75 rather than 2.0 for the same reason: rain cost scales
- * linearly with pixels, and 2.0 buys nothing perceptible on a scene this dark.
+ * The dpr ranges here are the DESKTOP baseline. They are not the final word:
+ * resolveTier() below raises the ceiling on small, dense screens, where the
+ * same cap would otherwise mean rendering a phone at 40% of its native pixels.
  */
 export const TIER_SPECS: Record<TierName, TierSpec> = {
   ULTRA:   { name: 'ULTRA',   instances: 85_000, bloomLevels: 5, msaa: 2, dpr: [1.0, 1.75],  textBudget: 40, ambientRain: true,  heroFormation: 4000, chromaticAberration: true },
@@ -46,6 +47,102 @@ export const TIER_SPECS: Record<TierName, TierSpec> = {
   LOW:     { name: 'LOW',     instances: 9_000,  bloomLevels: 2, msaa: 0, dpr: [0.75, 1.0],  textBudget: 14, ambientRain: false, heroFormation: 1500, chromaticAberration: true },
   REDUCED: { name: 'REDUCED', instances: 2_500,  bloomLevels: 0, msaa: 0, dpr: [1.0, 1.0],   textBudget: 14, ambientRain: false, heroFormation: 0,    chromaticAberration: false },
 };
+
+/**
+ * Quality as a PIXEL BUDGET, not a dpr number.
+ *
+ * A dpr cap means nothing without a screen size. Phones report
+ * devicePixelRatio 2.5-3.5, and R3F clamps that into the tier's range
+ * (`Math.min(Math.max(min, devicePixelRatio), max)`), so a phone on MID drew
+ * its canvas at 1.25 and handed the browser a buffer at ~40% of the pixels the
+ * display asks for. The upscale to fill the screen IS the "3D looks low-res on
+ * mobile" complaint — nothing in the scene was ever soft, it was being
+ * magnified 2.4x before it reached the glass.
+ *
+ * What the GPU actually pays for is PIXELS, and a 390x844 phone has 4.5x less
+ * CSS area than a 1512x982 laptop. So the tiers name a pixel budget, and the
+ * dpr cap falls out of it per device: sqrt(budget / cssArea).
+ *
+ * The budgets are set so nothing already running well moves — a cap is only
+ * ever RAISED, never lowered, so desktop and tablet resolve to exactly the
+ * numbers they had. Only small, dense screens gain, which is precisely where
+ * the clamp was doing the damage.
+ */
+const PIXEL_BUDGET: Record<TierName, number> = {
+  ULTRA:   3_400_000,
+  HIGH:    2_800_000,
+  MID:     2_200_000,
+  LOW:     1_000_000,
+  REDUCED: 2_200_000,
+};
+
+/**
+ * 2.0 stays the hard ceiling. Past it the rain's fill cost climbs with nothing
+ * perceptible in return: a DPR-3 phone rendering tens of thousands of additive
+ * quads plus a bloom mip chain at native resolution thermal-throttles inside
+ * about twenty seconds, and the difference between 2x and 3x on a 5-inch panel
+ * is not visible at arm's length.
+ */
+const DPR_CEILING = 2;
+
+function cssArea(): number {
+  if (typeof window === 'undefined') return 1_500_000;
+  // Area is rotation-invariant, so this does not churn on orientation change.
+  // innerWidth/innerHeight rather than screen.*, because the canvas is sized by
+  // the viewport, not the display.
+  return Math.max(1, window.innerWidth * window.innerHeight);
+}
+
+/**
+ * The device's real dpr, capped by the tier's budget. Rounded to 0.05 so an
+ * incidental viewport wobble (iOS URL bar) cannot produce a stream of
+ * marginally different framebuffer sizes.
+ */
+function budgetDpr(tier: TierName): number {
+  const raw = Math.sqrt(PIXEL_BUDGET[tier] / cssArea());
+  return Math.max(1, Math.min(DPR_CEILING, Math.round(raw * 20) / 20));
+}
+
+/**
+ * The spec a device actually runs, as opposed to the spec the tier names.
+ *
+ * Stage must use THIS rather than TIER_SPECS directly, and must recompute it
+ * whenever the tier changes.
+ */
+export function resolveTier(name: TierName): TierSpec {
+  const base = TIER_SPECS[name];
+  // Only ever raise. A machine that is fine today must not lose pixels because
+  // the budget arithmetic happened to land a little under its current cap.
+  const cap = Math.max(base.dpr[1], budgetDpr(name));
+  if (cap <= base.dpr[1]) return base;
+
+  /**
+   * REDUCED keeps every instance it has. It runs no bloom pass and its camera
+   * only snaps between anchors, so it is nowhere near fill-bound — and it is an
+   * accessibility mode, where thinning an already-minimal scene to buy pixels
+   * is the wrong trade in both directions.
+   */
+  if (name === 'REDUCED') return { ...base, dpr: [base.dpr[0], cap] };
+
+  /**
+   * Pay for the pixels.
+   *
+   * The rain is fill-bound — cost is roughly instances x pixels-per-quad — so
+   * holding frame time exactly constant would mean dividing the instance count
+   * by the full pixel gain (24k -> 9k on a phone), and a rain that thin is a
+   * different scene, not a sharper one. Half that, on the exponent, buys most
+   * of the headroom while the field still reads as dense; QualityMonitor is the
+   * real safety net for whatever is left, and it now demotes into a tier that
+   * cuts instances while KEEPING the pixels, which is the right trade — a
+   * sparser rain at native resolution looks better than a dense one upscaled.
+   */
+  const gain = (cap * cap) / (base.dpr[1] * base.dpr[1]);
+  return {
+    ...base,
+    dpr: [base.dpr[0], cap],
+    instances: Math.round(base.instances / Math.sqrt(gain)),
+  };
+}
 
 export function hasWebGL2(): boolean {
   try {

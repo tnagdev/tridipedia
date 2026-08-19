@@ -1,4 +1,4 @@
-import { Suspense, useCallback, useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { AdaptiveDpr, Preload } from '@react-three/drei';
 import * as THREE from 'three';
@@ -7,7 +7,7 @@ import { CameraRig } from '@/camera/CameraRig';
 import { World } from './World';
 import { Effects } from './Effects';
 import { QualityMonitor } from '@/perf/QualityProvider';
-import { TIER_SPECS, demote, promote, tierOverride, type TierName } from '@/perf/tier';
+import { demote, promote, resolveTier, tierOverride, type TierName } from '@/perf/tier';
 import { PALETTE } from '@/text/palette';
 import { getUi, setUi } from '@/state/store';
 import { WarmUp } from './WarmUp';
@@ -34,7 +34,9 @@ export function Stage({
   const [tierName, setTierName] = useState<TierName>(reducedMotion ? 'REDUCED' : ceiling);
   useEffect(() => setTierName(reducedMotion ? 'REDUCED' : ceiling), [ceiling, reducedMotion]);
 
-  const tier = TIER_SPECS[tierName];
+  // resolveTier, not TIER_SPECS: the named tier is a quality LEVEL, and what a
+  // device actually runs depends on how many pixels its screen asks for.
+  const tier = useMemo(() => resolveTier(tierName), [tierName]);
   const pinned = tierOverride();
   const handleDemote = useCallback(() => {
     if (pinned) return; // a pinned tier must not drift, or captures are meaningless
@@ -56,9 +58,9 @@ export function Stage({
       aria-hidden="true"
       role="presentation"
       tabIndex={-1}
-      // Hard-cap DPR at 2 regardless of device: a DPR-3 phone rendering tens of
-      // thousands of additive quads plus a bloom mip chain thermal-throttles
-      // within about 20 seconds.
+      // Resolved per device from the tier's pixel budget, and hard-capped at 2:
+      // a DPR-3 phone rendering tens of thousands of additive quads plus a bloom
+      // mip chain at native resolution thermal-throttles within about 20 seconds.
       dpr={tier.dpr}
       frameloop="always"
       gl={{
@@ -121,7 +123,15 @@ export function Stage({
         <Preload all />
       </Suspense>
 
-      <AdaptiveDpr pixelated />
+      {/**
+        * NOT `pixelated`. That prop sets `image-rendering: pixelated` on the
+        * canvas whenever performance regresses, which turns the browser's
+        * smooth upscale into nearest-neighbour blocks — the single most
+        * visible way this scene can look cheap, and on a phone the upscale
+        * factor is large enough that it reads as a resolution failure.
+        * Bilinear softness is the better half of that trade.
+        */}
+      <AdaptiveDpr />
       <QualityMonitor onDemote={handleDemote} onPromote={handlePromote} />
       <Effects tier={tier} reducedMotion={reducedMotion} />
     </Canvas>

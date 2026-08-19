@@ -1,0 +1,189 @@
+/*
+ * clip-path, NOT display:none — display:none removes the element from the
+ * accessibility tree AND makes its links unfocusable, which would defeat the
+ * entire purpose of the screen-reader mirror.
+ */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+  padding: 0;
+  margin: -1px;
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 10000;
+  padding: 10px 16px;
+  background: #000804;
+  color: #7dffa8;
+  border: 1px solid #0a4a1c;
+  font: 12px/1 ui-monospace, monospace;
+  letter-spacing: 0.12em;
+}
+.skip-link:focus { left: 8px; top: 8px; }
+
+.mode-toggle {
+  position: fixed;
+  top: 14px;
+  right: 14px;
+  z-index: 60;
+  background: rgba(0, 12, 5, 0.72);
+  color: #00d93f;
+  border: 1px solid rgba(0, 217, 63, 0.34);
+  padding: 7px 12px;
+  font: 11px/1 ui-monospace, "Cascadia Mono", monospace;
+  letter-spacing: 0.16em;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  transition: color .18s, border-color .18s, background .18s;
+}
+.mode-toggle:hover { color: #b6ffd0; border-color: rgba(0, 217, 63, 0.75); }
+.mode-toggle:focus-visible { outline: 2px solid #7dffa8; outline-offset: 2px; }
+
+/* Text Mode has its own stylesheet: src/styles/textmode.css */
+
+/* ---------- keyboard-reachable hotspot mirror ---------- */
+.a11y-layer {
+  position: fixed;
+  left: 0; top: 0;
+  z-index: 70;
+  width: 0; height: 0;
+}
+.a11y-layer a,
+.a11y-layer button {
+  position: absolute;
+  left: -9999px;
+  white-space: nowrap;
+  background: #000804;
+  color: #7dffa8;
+  border: 1px solid #0a4a1c;
+  padding: 8px 14px;
+  font: 12px/1 ui-monospace, monospace;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+}
+.a11y-layer a:focus-visible,
+.a11y-layer button:focus-visible {
+  left: 16px;
+  top: 60px;
+  outline: 2px solid #7dffa8;
+  outline-offset: 2px;
+}
+
+.reduced-chip {
+  position: fixed;
+  left: 14px;
+  bottom: 14px;
+  z-index: 60;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  background: rgba(0, 12, 5, 0.82);
+  border: 1px solid rgba(0, 217, 63, 0.3);
+  color: #55d97c;
+  padding: 8px 12px;
+  font: 11px/1.4 ui-monospace, monospace;
+  max-width: 46ch;
+}
+.reduced-chip button {
+  background: none;
+  border: 1px solid rgba(0, 217, 63, 0.4);
+  color: #7dffa8;
+  padding: 4px 8px;
+  font: inherit;
+  cursor: pointer;
+}
+
+/* ---------- keyboard nav ----------
+   Visually hidden until focused; the visible nav is rendered in WebGL. */
+.sr-nav ol { list-style: none; margin: 0; padding: 0; }
+.sr-nav button {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 10000;
+  background: #000804;
+  color: #7dffa8;
+  border: 1px solid #0a4a1c;
+  padding: 8px 14px;
+  font: 12px/1 ui-monospace, monospace;
+  letter-spacing: 0.14em;
+  cursor: pointer;
+}
+.sr-nav button:focus-visible {
+  left: 16px;
+  top: 52px;
+  outline: 2px solid #7dffa8;
+  outline-offset: 2px;
+}
+
+.scroll-progress {
+  position: fixed;
+  left: 0; top: 0;
+  height: 2px;
+  z-index: 65;
+  background: linear-gradient(90deg, rgba(0,217,63,0), #7dffa8);
+  transform-origin: 0 50%;
+  will-change: transform;
+  pointer-events: none;
+}
+
+/* dev-only perf HUD (?perf=1) */
+.perf-hud {
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
+  z-index: 200;
+  white-space: pre;
+  background: rgba(0, 8, 4, 0.82);
+  border: 1px solid rgba(0, 217, 63, 0.3);
+  color: #7dffa8;
+  padding: 8px 10px;
+  font: 11px/1.45 ui-monospace, "Cascadia Mono", monospace;
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   Portrait
+   --------------------------------------------------------------------------
+   In portrait the 3D navigation is a bar across the TOP of the frame, drawn in
+   WebGL and spanning almost the full width. Every piece of fixed DOM chrome
+   that used to live in the top-right corner has to get out of its way.
+   ========================================================================== */
+@media (orientation: portrait) {
+  /*
+   * Bottom-right, not top-right: the nav bar owns the top edge now. This also
+   * releases the 148px reservation Text Mode's topbar was cutting for it.
+   */
+  .mode-toggle {
+    top: auto;
+    bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+    right: calc(14px + env(safe-area-inset-right, 0px));
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  /* Full width above the toggle: 46ch does not fit beside it on a phone. */
+  .reduced-chip {
+    left: calc(14px + env(safe-area-inset-left, 0px));
+    right: calc(14px + env(safe-area-inset-right, 0px));
+    bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+    max-width: none;
+  }
+
+  /* Focus-only overlays: below the bar, or they land on top of it. */
+  .a11y-layer a:focus-visible,
+  .a11y-layer button:focus-visible { top: 140px; }
+  .sr-nav button:focus-visible { top: 140px; }
+  .skip-link:focus { top: calc(8px + env(safe-area-inset-top, 0px)); }
+
+  .perf-hud { bottom: calc(64px + env(safe-area-inset-bottom, 0px)); }
+}

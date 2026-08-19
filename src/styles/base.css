@@ -1,0 +1,28 @@
+*, *::before, *::after { box-sizing: border-box; }
+html, body, #root { margin: 0; padding: 0; height: 100%; background: #000804; }
+html {
+  scroll-behavior: auto; /* 'smooth' fights Lenis */
+  /*
+   * env() is unreadable from JS. Parking it here lets state/viewport.ts read it
+   * back with getComputedStyle, which is what keeps the camera-locked nav bar
+   * out from under a notch — the canvas is full-bleed under viewport-fit=cover.
+   */
+  --sat: env(safe-area-inset-top, 0px);
+  /*
+   * Stops iOS inflating type on rotate. A no-op on desktop, where the default
+   * 'auto' only ever autosizes on mobile.
+   */
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  overscroll-behavior: none;
+  color: #00d93f;
+  font-family: ui-monospace, "Cascadia Mono", "Courier New", monospace;
+}
+/*
+ * touch-action: pan-y hands a vertical drag to the browser — the journey IS the
+ * page scroll — while horizontal movement still reaches R3F's raycaster.
+ * tap-highlight is WebKit-mobile only: without it every nav tap flashes a grey
+ * block over the HUD.
+ */
+canvas { display: block; touch-action: pan-y; -webkit-tap-highlight-color: transparent; }

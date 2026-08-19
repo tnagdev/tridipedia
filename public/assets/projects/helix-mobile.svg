@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 200">
+  <rect width="320" height="200" fill="#04140b"/>
+  <rect x="8" y="8" width="304" height="184" fill="none" stroke="#4FD1FF" stroke-width="2" opacity="0.8"/>
+  <path d="M8 150 L110 96 L170 132 L240 78 L312 120" fill="none" stroke="#4FD1FF" stroke-width="2" opacity="0.5"/>
+  <text x="160" y="106" fill="#4FD1FF" font-family="monospace" font-size="17" text-anchor="middle">HELIX MOBILE</text>
+  <text x="160" y="130" fill="#4FD1FF" font-family="monospace" font-size="10" text-anchor="middle" opacity="0.7">PLACEHOLDER</text>
+</svg>
